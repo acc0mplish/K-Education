@@ -33,3 +33,18 @@ def test_render_with_no_artifacts(tmp_path):
     html = out.read_text(encoding="utf-8")
     assert "구독 우회" in html or "subscription" in html.lower()
     assert "no findings" in html.lower() or "발견 없음" in html
+
+
+def test_cmd_sec_report_writes_html(tmp_path, monkeypatch):
+    import main as M
+    name = "demo"
+    ev = tmp_path / "evidence" / name
+    ev.mkdir(parents=True)
+    (ev / "vuln_subscription.out").write_text('{"findings":[],"summary":{}}', encoding="utf-8")
+    monkeypatch.setattr(M, "ROOT", tmp_path)
+
+    class A:
+        target = name
+
+    M.cmd_sec_report(A())
+    assert (ev / "security_report.html").exists()

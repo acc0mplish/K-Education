@@ -190,6 +190,17 @@ def cmd_report(args):
     print(f"report -> {out}")
 
 
+def cmd_sec_report(args):
+    import report_sec
+    name = Path(args.target).name
+    evdir = ROOT / "evidence" / name
+    if not (evdir / "vuln_subscription.out").exists() and not (evdir / "red_findings.json").exists():
+        print(f"no BLUE/RED artifacts at {evdir}. run analyze + redteam first.")
+        sys.exit(1)
+    out = report_sec.render(name, evdir)
+    print(f"security report -> {out}")
+
+
 def cmd_dynamic(args):
     import subprocess
     script = ROOT / "scripts" / "dynamic_windows.py"
@@ -213,6 +224,8 @@ def main():
     p_cov.add_argument("target"); p_cov.set_defaults(func=cmd_coverage)
     p_rep = sub.add_parser("report", help="render interactive HTML report")
     p_rep.add_argument("target"); p_rep.set_defaults(func=cmd_report)
+    p_sec = sub.add_parser("sec-report", help="render red/blue security handoff report")
+    p_sec.add_argument("target"); p_sec.set_defaults(func=cmd_sec_report)
     p_dyn = sub.add_parser("dynamic", help="WSL Windows-interop dynamic run (proc tree + network)")
     p_dyn.add_argument("target")
     p_dyn.add_argument("--run", action="store_true", help="actually spawn the PE (default dry-run)")
