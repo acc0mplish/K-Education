@@ -86,3 +86,28 @@ def scan(path: str) -> dict:
         summary[f["severity"]] = summary.get(f["severity"], 0) + 1
     return {"target": str(p), "scannedMembers": scanned,
             "findings": findings, "summary": summary}
+
+
+from plugins.base import register, _ok, _write_evidence, register_applicability_na  # noqa: E402
+from states import ExecutionStatus  # noqa: E402
+from runner import RunResult  # noqa: E402
+
+_APPLICABLE = {"zip", "asar", "pe", "elf", "mach_o"}
+
+
+@register("t_vuln_subscription")
+def run(tool, target_path, runner, force_skip=False):
+    if tool.target_profiles and not any(
+        p in _APPLICABLE for p in tool.target_profiles
+    ):
+        return register_applicability_na(tool)
+    import json
+    report = scan(target_path)
+    stdout = json.dumps(report, indent=2, ensure_ascii=False).encode("utf-8")
+    _write_evidence(runner, tool, stdout)
+    return _ok(tool, stdout,
+               message=f"vuln_subscription: {len(report['findings'])} findings "
+                       f"(high={report['summary']['high']}, med={report['summary']['med']}, "
+                       f"low={report['summary']['low']})",
+               findingsCount=len(report["findings"]),
+               findingsSummary=report["summary"])

@@ -59,6 +59,7 @@
     {"toolID": "api_probe",     "tier": 6, "install": {"method": "harness", "status": "present"}, "command": "bash", "args": ["scripts/api_probe.sh","{target}"], "targetProfiles": ["network"], "timeout": 120, "plugin": "generic_cli"},
     {"toolID": "decai",         "tier": 6, "install": {"method": "download", "status": "missing"}, "command": "decai", "args": [], "targetProfiles": ["pe","elf"], "timeout": 600, "plugin": "stub", "note": "AI deobfuscation"},
     {"toolID": "opus_analysis", "tier": 6, "install": {"method": "harness", "status": "present"}, "command": "python", "args": ["-c","pass"], "targetProfiles": ["zip","asar","pe","elf","archive","network","unknown"], "timeout": 60, "plugin": "t_opus"},
+    {"toolID": "vuln_subscription", "tier": 7, "install": {"method": "harness", "status": "present"}, "command": "python", "args": ["-c","import plugins.t_vuln_subscription"], "targetProfiles": ["zip","asar","pe","elf"], "timeout": 180, "plugin": "t_vuln_subscription", "note": "Lane 0 BLUE: subscription/license bypass static detector (S1-S8)"},
     {"toolID": "mobsf",         "tier": 6, "install": {"method": "pip", "status": "manual"}, "command": "mobsf", "args": [], "targetProfiles": ["android"], "timeout": 600, "plugin": "stub", "note": "manual install / optional"}
   ],
   "deprecated": ["dsdump", "otool", "lipo", "dwarfdump", "ktool", "swift_section", "strongarm", "pe_tree", "trid"]

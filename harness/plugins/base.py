@@ -87,4 +87,5 @@ from plugins import (  # noqa: E402,F401
     t_file, t_strings, t_pefile, t_readpe, t_capstone, t_lief,
     t_diec, t_entropy, t_asar, t_yara, t_osslsigncode, t_radare2,
     t_angr, t_ghidra, t_retdec, t_wine, t_frida, t_opus, t_electron,
+    t_vuln_subscription,
 )
