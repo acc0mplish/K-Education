@@ -27,10 +27,18 @@ def read_u32(f):
 def parse_header(path: str):
     size = os.path.getsize(path)
     with open(path, "rb") as f:
-        # Electron asar: u32 sizes_header_pickle, u32 size_of_header, u32 size_of_json, then json
-        _sizes_pickle = read_u32(f)
-        _size_header = read_u32(f)
-        size_json = read_u32(f)
+        # Standard Electron asar Pickle prefix:
+        #   [4 (sizes_pickle)][headerStringSize][headerSize][jsonSize][json][pad]
+        # Legacy hand-crafted fixtures use a 3-field prefix: [0][0][jsonSize][json]
+        # Branch on the first u32 (Pickle size field is always 4 for real archives).
+        first = read_u32(f)
+        if first == 4:
+            read_u32(f)  # headerStringSize (unused)
+            read_u32(f)  # headerSize (unused)
+            size_json = read_u32(f)
+        else:
+            read_u32(f)  # legacy 0
+            size_json = read_u32(f)
         header_bytes = f.read(size_json)
         # align to 4
         if size_json % 4:
