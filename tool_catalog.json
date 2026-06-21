@@ -1,0 +1,65 @@
+{
+  "_meta": {
+    "version": "1.0.0",
+    "generated": "2026-06-20",
+    "source": "MacRE §13 hardened harness (Linux/WSL2 adaptation)",
+    "note": "47 non-deprecated tools. macOS-only Mach-O tools excluded; Linux equivalents substituted.",
+    "terminalStates": ["executed", "target_not_applicable", "execution_failed", "timeout_deferred_retry", "manual_install", "install_failed", "bridge_unavailable"]
+  },
+  "tools": [
+    {"toolID": "electron_business", "tier": 0, "install": {"method": "harness", "status": "present"}, "command": "python", "args": ["-c","import electron_detect"], "targetProfiles": ["zip","asar","pe"], "timeout": 300, "plugin": "t_electron", "note": "business-logic-first lane: asar/JS primary, PE heavy deferred"},
+    {"toolID": "file",          "tier": 1, "install": {"method": "apt", "status": "present"}, "command": "file", "args": ["{target}"], "targetProfiles": ["zip","asar","pe","elf","mach_o","archive","android","inno_setup","unknown"], "timeout": 60, "plugin": "t_file"},
+    {"toolID": "strings",       "tier": 1, "install": {"method": "apt", "status": "present"}, "command": "strings", "args": ["-n","6","{target}"], "targetProfiles": ["zip","asar","pe","elf","mach_o","archive","android","inno_setup","unknown"], "timeout": 120, "plugin": "t_strings"},
+    {"toolID": "hexdump",       "tier": 1, "install": {"method": "apt", "status": "present"}, "command": "hexdump", "args": ["-C","{target}"], "targetProfiles": ["zip","asar","pe","elf","mach_o","archive","android","unknown"], "timeout": 60, "plugin": "generic_cli", "head": 256},
+    {"toolID": "sha256sum",     "tier": 1, "install": {"method": "coreutils", "status": "present"}, "command": "sha256sum", "args": ["{target}"], "targetProfiles": ["zip","asar","pe","elf","mach_o","archive","android","inno_setup","unknown","network"], "timeout": 120, "plugin": "generic_cli"},
+    {"toolID": "exiftool",      "tier": 1, "install": {"method": "apt", "status": "missing"}, "command": "exiftool", "args": ["{target}"], "targetProfiles": ["zip","asar","pe","elf","mach_o","archive","android","unknown"], "timeout": 120, "plugin": "generic_cli"},
+    {"toolID": "binwalk",       "tier": 1, "install": {"method": "apt", "status": "missing"}, "command": "binwalk", "args": ["-E","{target}"], "targetProfiles": ["zip","asar","pe","elf","archive","android"], "timeout": 300, "plugin": "generic_cli"},
+    {"toolID": "ssdeep",        "tier": 1, "install": {"method": "apt", "status": "missing"}, "command": "ssdeep", "args": ["{target}"], "targetProfiles": ["zip","asar","pe","elf","mach_o","archive","android","unknown"], "timeout": 120, "plugin": "generic_cli"},
+    {"toolID": "foremost",      "tier": 1, "install": {"method": "apt", "status": "missing"}, "command": "foremost", "args": ["-i","{target}","-o","{outdir}/foremost","-T"], "targetProfiles": ["pe","elf","archive","zip","android"], "timeout": 300, "plugin": "generic_cli"},
+    {"toolID": "p7zip",         "tier": 1, "install": {"method": "apt", "status": "missing"}, "command": "7z", "args": ["l","{target}"], "targetProfiles": ["zip","archive","android"], "timeout": 180, "plugin": "generic_cli"},
+    {"toolID": "innoextract",   "tier": 1, "install": {"method": "apt", "status": "missing"}, "command": "innoextract", "args": ["-l","{target}"], "targetProfiles": ["inno_setup"], "timeout": 120, "plugin": "generic_cli"},
+    {"toolID": "openssl_x509",  "tier": 1, "install": {"method": "apt", "status": "present"}, "command": "openssl", "args": ["dgst","-sha256","{target}"], "targetProfiles": ["zip","asar","pe","elf","archive","android"], "timeout": 60, "plugin": "generic_cli"},
+    {"toolID": "entropy",       "tier": 1, "install": {"method": "harness", "status": "present"}, "command": "python", "args": ["scripts/entropy.py","{target}"], "targetProfiles": ["pe","elf","archive","zip","unknown"], "timeout": 180, "plugin": "t_entropy"},
+
+    {"toolID": "asar",          "tier": 2, "install": {"method": "npm", "status": "present"}, "command": "npx", "args": ["--prefix","harness/node_tools","asar","list","{target}"], "targetProfiles": ["asar"], "timeout": 120, "plugin": "t_asar"},
+    {"toolID": "asar_extract",  "tier": 2, "install": {"method": "harness", "status": "present"}, "command": "python3", "args": ["scripts/asar_extract.py","{target}","{outdir}/asar_extract"], "targetProfiles": ["asar"], "timeout": 180, "plugin": "generic_cli"},
+    {"toolID": "codebase_audit","tier": 2, "install": {"method": "harness", "status": "present"}, "command": "python3", "args": ["harness/plugins/codebase_audit.py","{target}"], "targetProfiles": ["asar","zip"], "timeout": 300, "plugin": "generic_cli"},
+
+    {"toolID": "pefile",        "tier": 3, "install": {"method": "pip", "status": "present"}, "command": "python", "args": ["-c","import pefile"], "targetProfiles": ["pe"], "timeout": 180, "plugin": "t_pefile"},
+    {"toolID": "readpe",        "tier": 3, "install": {"method": "harness", "status": "present"}, "command": "python", "args": ["-c","pass"], "targetProfiles": ["pe"], "timeout": 120, "plugin": "t_readpe"},
+    {"toolID": "objdump",       "tier": 3, "install": {"method": "apt", "status": "present"}, "command": "objdump", "args": ["-x","{target}"], "targetProfiles": ["pe","elf"], "timeout": 300, "plugin": "generic_cli"},
+    {"toolID": "readelf",       "tier": 3, "install": {"method": "apt", "status": "present"}, "command": "readelf", "args": ["-a","{target}"], "targetProfiles": ["elf"], "timeout": 120, "plugin": "generic_cli"},
+    {"toolID": "nm",            "tier": 3, "install": {"method": "apt", "status": "present"}, "command": "nm", "args": ["{target}"], "targetProfiles": ["elf"], "timeout": 120, "plugin": "generic_cli"},
+    {"toolID": "capstone",      "tier": 3, "install": {"method": "pip", "status": "present"}, "command": "python", "args": ["-c","import capstone"], "targetProfiles": ["pe"], "timeout": 180, "plugin": "t_capstone"},
+    {"toolID": "rizin",         "tier": 3, "install": {"method": "apt", "status": "missing"}, "command": "rizin", "args": ["-q","-c","iI;iS;ii;iE;iz","{target}"], "targetProfiles": ["pe","elf"], "timeout": 600, "plugin": "generic_cli"},
+    {"toolID": "rabin2",        "tier": 3, "install": {"method": "apt", "status": "missing"}, "command": "rabin2", "args": ["-SIIiE","{target}"], "targetProfiles": ["pe","elf"], "timeout": 600, "plugin": "generic_cli"},
+    {"toolID": "radare2",       "tier": 3, "install": {"method": "apt", "status": "missing"}, "command": "r2", "args": ["-q","-c","aaa;afl;iI","{target}"], "targetProfiles": ["pe","elf"], "timeout": 900, "plugin": "t_radare2"},
+    {"toolID": "cutter",        "tier": 3, "install": {"method": "download", "status": "missing"}, "command": "cutter", "args": [], "targetProfiles": ["pe","elf"], "timeout": 900, "plugin": "stub", "note": "GUI/optional"},
+    {"toolID": "lief",          "tier": 3, "install": {"method": "pip", "status": "present"}, "command": "python", "args": ["-c","import lief"], "targetProfiles": ["pe","elf","mach_o"], "timeout": 180, "plugin": "t_lief"},
+    {"toolID": "die",           "tier": 3, "install": {"method": "download", "status": "missing"}, "command": "diec", "args": ["{target}"], "targetProfiles": ["pe","elf","archive"], "timeout": 180, "plugin": "t_diec"},
+    {"toolID": "imhex",         "tier": 3, "install": {"method": "download", "status": "missing"}, "command": "imhex", "args": [], "targetProfiles": ["pe","elf"], "timeout": 300, "plugin": "stub", "note": "GUI/optional"},
+
+    {"toolID": "ghidra",        "tier": 4, "install": {"method": "download", "status": "missing"}, "command": "analyzeHeadless", "args": [], "targetProfiles": ["pe","elf"], "timeout": 1800, "plugin": "t_ghidra"},
+    {"toolID": "ghidra_script", "tier": 4, "install": {"method": "download", "status": "missing"}, "command": "analyzeHeadless", "args": [], "targetProfiles": ["pe","elf"], "timeout": 1800, "plugin": "stub"},
+    {"toolID": "retdec",        "tier": 4, "install": {"method": "download", "status": "missing"}, "command": "retdec-decompiler", "args": ["{target}"], "targetProfiles": ["pe","elf"], "timeout": 1800, "plugin": "t_retdec"},
+    {"toolID": "angr",          "tier": 4, "install": {"method": "pip", "status": "present"}, "command": "python", "args": ["-c","import angr"], "targetProfiles": ["pe","elf"], "timeout": 900, "plugin": "t_angr"},
+    {"toolID": "floss",         "tier": 4, "install": {"method": "pip", "status": "missing"}, "command": "floss", "args": ["{target}"], "targetProfiles": ["pe","elf"], "timeout": 900, "plugin": "generic_cli", "note": "16MB file limit"},
+    {"toolID": "capa",          "tier": 4, "install": {"method": "pip", "status": "missing"}, "command": "capa", "args": ["{target}"], "targetProfiles": ["pe","elf"], "timeout": 600, "plugin": "generic_cli", "rulesPath": "tools/downloads/capa/rules"},
+
+    {"toolID": "unicorn",       "tier": 5, "install": {"method": "pip", "status": "present"}, "command": "python", "args": ["-c","import unicorn"], "targetProfiles": ["pe","elf"], "timeout": 300, "plugin": "stub", "note": "entry stub emulation"},
+    {"toolID": "qiling",        "tier": 5, "install": {"method": "pip", "status": "missing"}, "command": "python", "args": ["-c","import qiling"], "targetProfiles": ["pe"], "timeout": 600, "plugin": "stub", "note": "needs Windows rootfs"},
+    {"toolID": "miasm",         "tier": 5, "install": {"method": "pip", "status": "missing"}, "command": "python", "args": ["-c","import miasm"], "targetProfiles": ["pe","elf"], "timeout": 600, "plugin": "stub"},
+    {"toolID": "frida",         "tier": 5, "install": {"method": "pip", "status": "present"}, "command": "frida-ps", "args": ["-a"], "targetProfiles": ["pe","elf","network"], "timeout": 120, "plugin": "t_frida"},
+    {"toolID": "wine",          "tier": 5, "install": {"method": "apt", "status": "missing"}, "command": "wine64", "args": ["--version"], "targetProfiles": ["pe"], "timeout": 600, "plugin": "t_wine"},
+    {"toolID": "gdb",           "tier": 5, "install": {"method": "apt", "status": "missing"}, "command": "gdb", "args": ["--batch","-ex","info file","{target}"], "targetProfiles": ["elf"], "timeout": 300, "plugin": "generic_cli"},
+
+    {"toolID": "yara",          "tier": 6, "install": {"method": "apt", "status": "missing"}, "command": "yara", "args": ["tools/yara_rules/index.yar","{target}"], "targetProfiles": ["zip","asar","pe","elf","mach_o","archive","android"], "timeout": 300, "plugin": "t_yara"},
+    {"toolID": "osslsigncode",  "tier": 6, "install": {"method": "apt", "status": "missing"}, "command": "osslsigncode", "args": ["verify","-in","{target}"], "targetProfiles": ["pe"], "timeout": 120, "plugin": "t_osslsigncode"},
+    {"toolID": "curl",          "tier": 6, "install": {"method": "apt", "status": "present"}, "command": "curl", "args": ["-s","{target}"], "targetProfiles": ["network"], "timeout": 60, "plugin": "generic_cli"},
+    {"toolID": "api_probe",     "tier": 6, "install": {"method": "harness", "status": "present"}, "command": "bash", "args": ["scripts/api_probe.sh","{target}"], "targetProfiles": ["network"], "timeout": 120, "plugin": "generic_cli"},
+    {"toolID": "decai",         "tier": 6, "install": {"method": "download", "status": "missing"}, "command": "decai", "args": [], "targetProfiles": ["pe","elf"], "timeout": 600, "plugin": "stub", "note": "AI deobfuscation"},
+    {"toolID": "opus_analysis", "tier": 6, "install": {"method": "harness", "status": "present"}, "command": "python", "args": ["-c","pass"], "targetProfiles": ["zip","asar","pe","elf","archive","network","unknown"], "timeout": 60, "plugin": "t_opus"},
+    {"toolID": "mobsf",         "tier": 6, "install": {"method": "pip", "status": "manual"}, "command": "mobsf", "args": [], "targetProfiles": ["android"], "timeout": 600, "plugin": "stub", "note": "manual install / optional"}
+  ],
+  "deprecated": ["dsdump", "otool", "lipo", "dwarfdump", "ktool", "swift_section", "strongarm", "pe_tree", "trid"]
+}

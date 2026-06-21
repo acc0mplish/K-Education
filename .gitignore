@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+*.py[cod]
+harness/.venv/
+
+# Node
+harness/node_tools/node_modules/
+
+# Analysis output / large binaries (regenerable, proprietary targets)
+evidence/
+tools/downloads/
+daf-launcher-*.zip
+*.zip
+
+# SDD scratch
+.superpowers/
+
+# misc
+*.log
+.DS_Store

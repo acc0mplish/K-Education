@@ -1,0 +1,410 @@
+{
+  "fullRequiredTools": 48,
+  "totalKnownTools": 57,
+  "missingCore": 4,
+  "missingOptional": [
+    "mobsf"
+  ],
+  "missingDeprecated": [
+    "dsdump",
+    "otool",
+    "lipo",
+    "dwarfdump",
+    "ktool",
+    "swift_section",
+    "strongarm",
+    "pe_tree",
+    "trid"
+  ],
+  "byInstallStatus": {
+    "present": 35,
+    "missing": 12,
+    "manual": 1
+  },
+  "tools": [
+    {
+      "toolID": "electron_business",
+      "tier": 0,
+      "installMethod": "harness",
+      "catalogStatus": "present",
+      "installStatus": "present",
+      "command": "python"
+    },
+    {
+      "toolID": "binwalk",
+      "tier": 1,
+      "installMethod": "apt",
+      "catalogStatus": "missing",
+      "installStatus": "present",
+      "command": "binwalk"
+    },
+    {
+      "toolID": "entropy",
+      "tier": 1,
+      "installMethod": "harness",
+      "catalogStatus": "present",
+      "installStatus": "present",
+      "command": "python"
+    },
+    {
+      "toolID": "exiftool",
+      "tier": 1,
+      "installMethod": "apt",
+      "catalogStatus": "missing",
+      "installStatus": "present",
+      "command": "exiftool"
+    },
+    {
+      "toolID": "file",
+      "tier": 1,
+      "installMethod": "apt",
+      "catalogStatus": "present",
+      "installStatus": "present",
+      "command": "file"
+    },
+    {
+      "toolID": "foremost",
+      "tier": 1,
+      "installMethod": "apt",
+      "catalogStatus": "missing",
+      "installStatus": "present",
+      "command": "foremost"
+    },
+    {
+      "toolID": "hexdump",
+      "tier": 1,
+      "installMethod": "apt",
+      "catalogStatus": "present",
+      "installStatus": "present",
+      "command": "hexdump"
+    },
+    {
+      "toolID": "innoextract",
+      "tier": 1,
+      "installMethod": "apt",
+      "catalogStatus": "missing",
+      "installStatus": "present",
+      "command": "innoextract"
+    },
+    {
+      "toolID": "openssl_x509",
+      "tier": 1,
+      "installMethod": "apt",
+      "catalogStatus": "present",
+      "installStatus": "present",
+      "command": "openssl"
+    },
+    {
+      "toolID": "p7zip",
+      "tier": 1,
+      "installMethod": "apt",
+      "catalogStatus": "missing",
+      "installStatus": "present",
+      "command": "7z"
+    },
+    {
+      "toolID": "sha256sum",
+      "tier": 1,
+      "installMethod": "coreutils",
+      "catalogStatus": "present",
+      "installStatus": "present",
+      "command": "sha256sum"
+    },
+    {
+      "toolID": "ssdeep",
+      "tier": 1,
+      "installMethod": "apt",
+      "catalogStatus": "missing",
+      "installStatus": "present",
+      "command": "ssdeep"
+    },
+    {
+      "toolID": "strings",
+      "tier": 1,
+      "installMethod": "apt",
+      "catalogStatus": "present",
+      "installStatus": "present",
+      "command": "strings"
+    },
+    {
+      "toolID": "asar",
+      "tier": 2,
+      "installMethod": "npm",
+      "catalogStatus": "present",
+      "installStatus": "present",
+      "command": "npx"
+    },
+    {
+      "toolID": "asar_extract",
+      "tier": 2,
+      "installMethod": "harness",
+      "catalogStatus": "present",
+      "installStatus": "present",
+      "command": "python3"
+    },
+    {
+      "toolID": "codebase_audit",
+      "tier": 2,
+      "installMethod": "harness",
+      "catalogStatus": "present",
+      "installStatus": "present",
+      "command": "python3"
+    },
+    {
+      "toolID": "capstone",
+      "tier": 3,
+      "installMethod": "pip",
+      "catalogStatus": "present",
+      "installStatus": "present",
+      "command": "python"
+    },
+    {
+      "toolID": "cutter",
+      "tier": 3,
+      "installMethod": "download",
+      "catalogStatus": "missing",
+      "installStatus": "missing",
+      "command": "cutter"
+    },
+    {
+      "toolID": "die",
+      "tier": 3,
+      "installMethod": "download",
+      "catalogStatus": "missing",
+      "installStatus": "missing",
+      "command": "diec"
+    },
+    {
+      "toolID": "imhex",
+      "tier": 3,
+      "installMethod": "download",
+      "catalogStatus": "missing",
+      "installStatus": "missing",
+      "command": "imhex"
+    },
+    {
+      "toolID": "lief",
+      "tier": 3,
+      "installMethod": "pip",
+      "catalogStatus": "present",
+      "installStatus": "present",
+      "command": "python"
+    },
+    {
+      "toolID": "nm",
+      "tier": 3,
+      "installMethod": "apt",
+      "catalogStatus": "present",
+      "installStatus": "present",
+      "command": "nm"
+    },
+    {
+      "toolID": "objdump",
+      "tier": 3,
+      "installMethod": "apt",
+      "catalogStatus": "present",
+      "installStatus": "present",
+      "command": "objdump"
+    },
+    {
+      "toolID": "pefile",
+      "tier": 3,
+      "installMethod": "pip",
+      "catalogStatus": "present",
+      "installStatus": "present",
+      "command": "python"
+    },
+    {
+      "toolID": "rabin2",
+      "tier": 3,
+      "installMethod": "apt",
+      "catalogStatus": "missing",
+      "installStatus": "present",
+      "command": "rabin2"
+    },
+    {
+      "toolID": "radare2",
+      "tier": 3,
+      "installMethod": "apt",
+      "catalogStatus": "missing",
+      "installStatus": "present",
+      "command": "r2"
+    },
+    {
+      "toolID": "readelf",
+      "tier": 3,
+      "installMethod": "apt",
+      "catalogStatus": "present",
+      "installStatus": "present",
+      "command": "readelf"
+    },
+    {
+      "toolID": "readpe",
+      "tier": 3,
+      "installMethod": "harness",
+      "catalogStatus": "present",
+      "installStatus": "present",
+      "command": "python"
+    },
+    {
+      "toolID": "rizin",
+      "tier": 3,
+      "installMethod": "apt",
+      "catalogStatus": "missing",
+      "installStatus": "missing",
+      "command": "rizin"
+    },
+    {
+      "toolID": "angr",
+      "tier": 4,
+      "installMethod": "pip",
+      "catalogStatus": "present",
+      "installStatus": "present",
+      "command": "python"
+    },
+    {
+      "toolID": "capa",
+      "tier": 4,
+      "installMethod": "pip",
+      "catalogStatus": "missing",
+      "installStatus": "missing",
+      "command": "capa"
+    },
+    {
+      "toolID": "floss",
+      "tier": 4,
+      "installMethod": "pip",
+      "catalogStatus": "missing",
+      "installStatus": "missing",
+      "command": "floss"
+    },
+    {
+      "toolID": "ghidra",
+      "tier": 4,
+      "installMethod": "download",
+      "catalogStatus": "missing",
+      "installStatus": "missing",
+      "command": "analyzeHeadless"
+    },
+    {
+      "toolID": "ghidra_script",
+      "tier": 4,
+      "installMethod": "download",
+      "catalogStatus": "missing",
+      "installStatus": "missing",
+      "command": "analyzeHeadless"
+    },
+    {
+      "toolID": "retdec",
+      "tier": 4,
+      "installMethod": "download",
+      "catalogStatus": "missing",
+      "installStatus": "missing",
+      "command": "retdec-decompiler"
+    },
+    {
+      "toolID": "frida",
+      "tier": 5,
+      "installMethod": "pip",
+      "catalogStatus": "present",
+      "installStatus": "present",
+      "command": "frida-ps"
+    },
+    {
+      "toolID": "gdb",
+      "tier": 5,
+      "installMethod": "apt",
+      "catalogStatus": "missing",
+      "installStatus": "present",
+      "command": "gdb"
+    },
+    {
+      "toolID": "miasm",
+      "tier": 5,
+      "installMethod": "pip",
+      "catalogStatus": "missing",
+      "installStatus": "missing",
+      "command": "python"
+    },
+    {
+      "toolID": "qiling",
+      "tier": 5,
+      "installMethod": "pip",
+      "catalogStatus": "missing",
+      "installStatus": "missing",
+      "command": "python"
+    },
+    {
+      "toolID": "unicorn",
+      "tier": 5,
+      "installMethod": "pip",
+      "catalogStatus": "present",
+      "installStatus": "present",
+      "command": "python"
+    },
+    {
+      "toolID": "wine",
+      "tier": 5,
+      "installMethod": "apt",
+      "catalogStatus": "missing",
+      "installStatus": "present",
+      "command": "wine64"
+    },
+    {
+      "toolID": "api_probe",
+      "tier": 6,
+      "installMethod": "harness",
+      "catalogStatus": "present",
+      "installStatus": "present",
+      "command": "bash"
+    },
+    {
+      "toolID": "curl",
+      "tier": 6,
+      "installMethod": "apt",
+      "catalogStatus": "present",
+      "installStatus": "present",
+      "command": "curl"
+    },
+    {
+      "toolID": "decai",
+      "tier": 6,
+      "installMethod": "download",
+      "catalogStatus": "missing",
+      "installStatus": "missing",
+      "command": "decai"
+    },
+    {
+      "toolID": "mobsf",
+      "tier": 6,
+      "installMethod": "pip",
+      "catalogStatus": "manual",
+      "installStatus": "manual",
+      "command": "mobsf"
+    },
+    {
+      "toolID": "opus_analysis",
+      "tier": 6,
+      "installMethod": "harness",
+      "catalogStatus": "present",
+      "installStatus": "present",
+      "command": "python"
+    },
+    {
+      "toolID": "osslsigncode",
+      "tier": 6,
+      "installMethod": "apt",
+      "catalogStatus": "missing",
+      "installStatus": "present",
+      "command": "osslsigncode"
+    },
+    {
+      "toolID": "yara",
+      "tier": 6,
+      "installMethod": "apt",
+      "catalogStatus": "missing",
+      "installStatus": "present",
+      "command": "yara"
+    }
+  ]
+}
