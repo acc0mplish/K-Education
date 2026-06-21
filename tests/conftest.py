@@ -5,7 +5,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parent
 HARNESS = ROOT / "harness"
-for p in (str(ROOT), str(HARNESS)):
+for p in (str(HERE), str(ROOT), str(HARNESS)):
     if p not in sys.path:
         sys.path.insert(0, p)
 
