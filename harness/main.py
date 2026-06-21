@@ -201,6 +201,18 @@ def cmd_sec_report(args):
     print(f"security report -> {out}")
 
 
+def cmd_engagement_report(args):
+    import report_docs
+    import datetime
+    name = Path(args.target).name
+    evdir = ROOT / "evidence" / name
+    date = args.date or datetime.date.today().isoformat()
+    eng = ROOT / "education" / "reports" / "engagements" / f"{date}-{name}"
+    out = report_docs.render_engagement(eng, evdir, name, date)
+    for k, p in out.items():
+        print(f"{k} -> {p}")
+
+
 def cmd_dynamic(args):
     import subprocess
     script = ROOT / "scripts" / "dynamic_windows.py"
@@ -226,6 +238,10 @@ def main():
     p_rep.add_argument("target"); p_rep.set_defaults(func=cmd_report)
     p_sec = sub.add_parser("sec-report", help="render red/blue security handoff report")
     p_sec.add_argument("target"); p_sec.set_defaults(func=cmd_sec_report)
+    p_eng = sub.add_parser("engagement-report", help="render red/blue 계획서+결과서")
+    p_eng.add_argument("target")
+    p_eng.add_argument("--date", default=None, help="YYYY-MM-DD (default: today)")
+    p_eng.set_defaults(func=cmd_engagement_report)
     p_dyn = sub.add_parser("dynamic", help="WSL Windows-interop dynamic run (proc tree + network)")
     p_dyn.add_argument("target")
     p_dyn.add_argument("--run", action="store_true", help="actually spawn the PE (default dry-run)")

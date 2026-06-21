@@ -27,3 +27,22 @@ def test_render_engagement_handles_missing_artifacts(tmp_path):
     out = RD.render_engagement(eng, ev, "clean", "2026-06-21")
     rr = out["red_result"].read_text(encoding="utf-8")
     assert "확정된 익스플로잇 없음" in rr or "no red findings" in rr.lower()
+
+
+def test_cmd_engagement_report_writes_four_docs(tmp_path, monkeypatch):
+    import main as M
+    name = "demo"
+    ev = tmp_path / "evidence" / name
+    ev.mkdir(parents=True)
+    (ev / "red_findings.json").write_text('{"findings":[]}', encoding="utf-8")
+    (ev / "vuln_subscription.out").write_text('{"findings":[]}', encoding="utf-8")
+    monkeypatch.setattr(M, "ROOT", tmp_path)
+
+    class A:
+        target = name
+        date = "2026-06-21"
+
+    M.cmd_engagement_report(A())
+    eng = tmp_path / "education" / "reports" / "engagements" / "2026-06-21-demo"
+    for f in ("red_team_plan.md", "red_team_result.md", "blue_team_plan.md", "blue_team_result.md"):
+        assert (eng / f).exists()
