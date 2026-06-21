@@ -92,7 +92,7 @@ from plugins.base import register, _ok, _write_evidence, register_applicability_
 from states import ExecutionStatus  # noqa: E402
 from runner import RunResult  # noqa: E402
 
-_APPLICABLE = {"zip", "asar", "pe", "elf", "mach_o"}
+_APPLICABLE = {"zip", "asar", "pe", "elf"}
 
 
 @register("t_vuln_subscription")

@@ -41,8 +41,13 @@ def _load(evdir: Path):
 
 
 def _remediation_html(rid: str) -> str:
-    title, guide = D_GUIDE.get(rid, (rid, ""))
-    return f'<b>{html.escape(rid)}</b> {html.escape(title)} — {html.escape(guide)}' if rid else ""
+    if not rid:
+        return ""
+    parts = []
+    for comp in rid.split("/"):
+        title, guide = D_GUIDE.get(comp, (comp, ""))
+        parts.append(f"<b>{html.escape(comp)}</b> {html.escape(title)} — {html.escape(guide)}")
+    return "; ".join(parts)
 
 
 def render(target_name: str, evdir: Path) -> Path:

@@ -15,6 +15,9 @@ daf-launcher-*.zip
 # SDD scratch
 .superpowers/
 
+# Generated engagement report docs (output, not source)
+education/reports/engagements/
+
 # misc
 *.log
 .DS_Store

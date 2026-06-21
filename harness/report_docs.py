@@ -45,7 +45,11 @@ def _blue_table(blue: dict) -> str:
 
 
 def _hardening_status(blue: dict) -> str:
-    needed = {f.get("remediation", "") for f in blue.get("findings", []) if f.get("remediation", "") in _D}
+    needed = set()
+    for f in blue.get("findings", []):
+        for comp in str(f.get("remediation", "")).split("/"):
+            if comp in _D:
+                needed.add(comp)
     lines = []
     for did, title in sorted(_D.items()):
         status = "🔴 필요" if did in needed else "⚪ 해당/선택"
@@ -59,8 +63,9 @@ def build_red_result(red: dict, meta: dict) -> str:
     confirmed = sum(1 for f in findings if f.get("confirmed"))
     summary = f"총 {len(findings)}건 중 {confirmed}건 익스플로잇 확정."
     recs = "\n".join(
-        f"- **{f.get('remediation', '')}** ({_D.get(f.get('remediation', ''), '?')}): {f.get('vector', '')}"
-        for f in findings if f.get("confirmed"))
+        f"- **{rem}** ({'/'.join(_D.get(c, '?') for c in rem.split('/'))}): {f.get('vector', '')}"
+        for f in findings if f.get("confirmed")
+        for rem in [f.get("remediation", "")])
     return _sub(tmpl, {
         "TARGET": meta["target"], "DATE": meta["date"],
         "EXEC_SUMMARY": summary, "FINDINGS_TABLE": _red_table(red),

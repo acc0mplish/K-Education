@@ -29,6 +29,21 @@ def test_render_engagement_handles_missing_artifacts(tmp_path):
     assert "확정된 익스플로잇 없음" in rr or "no red findings" in rr.lower()
 
 
+def test_hardening_status_splits_compound(tmp_path):
+    import report_docs as RD
+    blue = {"findings": [{"id": "S1/S6", "signal": "client_subscription_check",
+                          "severity": "med", "file": "a.js", "remediation": "D1/D2"}],
+            "summary": {"high": 0, "med": 1, "low": 0}}
+    ev = tmp_path / "ev"; ev.mkdir()
+    (ev / "vuln_subscription.out").write_text(json.dumps(blue), encoding="utf-8")
+    out = RD.render_engagement(tmp_path / "eng", ev, "demo", "2026-06-21")
+    br = out["blue_result"].read_text(encoding="utf-8")
+    # both D1 and D2 marked as needed (필요) — split on /
+    d1_line = [l for l in br.splitlines() if l.startswith("- **D1")][0]
+    d2_line = [l for l in br.splitlines() if l.startswith("- **D2")][0]
+    assert "필요" in d1_line and "필요" in d2_line
+
+
 def test_cmd_engagement_report_writes_four_docs(tmp_path, monkeypatch):
     import main as M
     name = "demo"
