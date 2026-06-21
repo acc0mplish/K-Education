@@ -1,0 +1,5 @@
+{
+  "mock_endpoints": ["/api/subscription/mock-set", "/api/subscription/mock"],
+  "spoof_bodies": ["{\"plan\":\"pro\",\"status\":\"active\"}", "{\"subscriptionStatus\":\"premium\"}"],
+  "_ethics": "own-lab / owned target only. --i-own-this required for non-localhost."
+}
