@@ -31,6 +31,22 @@ class TargetInfo:
     size: int
     magic_hex: str
     method: str  # how decided
+    sub_profile: str = "object"  # object | archive | script | network
+
+
+def sub_profile_for(profile: str, path: str) -> str:
+    """2nd-phase content-structure gate (report §12.5). Object-introspection
+    tools are gated out for archive/script sub-profiles (defense vs MacRE
+    asar->Mach-O misclassification)."""
+    if profile in ("zip", "asar", "archive", "android"):
+        return "archive"
+    if profile == "network":
+        return "network"
+    if profile == "unknown":
+        low = path.lower()
+        if low.endswith((".js", ".cjs", ".mjs", ".py", ".sh", ".ts")):
+            return "script"
+    return "object"
 
 
 def _u32le(b: bytes) -> int:
@@ -41,7 +57,7 @@ def _u32be(b: bytes) -> int:
     return int.from_bytes(b[:4], "big")
 
 
-def classify(path: str | Path) -> TargetInfo:
+def _classify_raw(path: str | Path) -> TargetInfo:
     p = str(path)
     size = Path(p).stat().st_size if Path(p).exists() else 0
 
@@ -117,3 +133,10 @@ def classify(path: str | Path) -> TargetInfo:
             pass
 
     return TargetInfo(p, "unknown", size, magic_hex, "fallback")
+
+
+def classify(path: str | Path) -> TargetInfo:
+    """Public classifier — runs raw classify then injects sub_profile (§12.5 gate)."""
+    from dataclasses import replace
+    info = _classify_raw(path)
+    return replace(info, sub_profile=sub_profile_for(info.profile, info.path))

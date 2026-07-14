@@ -23,7 +23,8 @@ if str(HERE) not in sys.path:
     sys.path.insert(0, str(HERE))
 
 ROOT = HERE.parent
-CATALOG_PATH = ROOT / "tool_catalog.json"
+import platselect  # noqa: E402
+CATALOG_PATH = platselect.catalog_path()
 
 from catalog import ToolCatalog  # noqa: E402
 from coverage import CoverageManifest  # noqa: E402
@@ -120,30 +121,38 @@ def cmd_analyze(args):
     for tool in cat.tools:
         if not tool.applies_to(target.profile):
             cov.add(tool, register_applicability_na(tool))
-        else:
-            plugin = get_plugin(tool.plugin)
-            if plugin is None:
-                cov.add(tool, _bridge_unavailable(tool))
-                continue
-            skip = args.strategy == "quick" and (
-                tool.tier not in quick_tiers and tool.plugin not in quick_plugins
-            )
-            if skip:
-                from runner import RunResult
-                cov.add(tool, RunResult(
-                    tool.toolID, ExecutionStatus.SKIPPED, None, "", 0, 0, 0.0,
-                    message="skipped by quick strategy (run --strategy full)"))
-                continue
-            # Electron lane: defer heavy PE decompilers (business logic is in asar)
-            if is_electron_pe and tool.toolID in heavy_defer:
-                from runner import RunResult
-                cov.add(tool, RunResult(
-                    tool.toolID, ExecutionStatus.EXECUTION_FAILED, None, "", 0, 0, 0.0,
-                    message="DEFERRED: Electron V8 shell — business logic in app.asar; "
-                            "full PE decompile not run (report §10). See electron_business lane."))
-                continue
-            result = plugin(tool, target.path, runner, force_skip=False)
-            cov.add(tool, result)
+            continue
+        # §12.5 content-structure gate: object-introspection tools excluded from
+        # archive/script sub-profiles (defense vs asar->Mach-O misclassification)
+        if tool.object_only and target.sub_profile != "object":
+            from runner import RunResult
+            cov.add(tool, RunResult(
+                tool.toolID, ExecutionStatus.TARGET_NOT_APPLICABLE, None, "", 0, 0, 0.0,
+                message=f"§12.5 gate: object tool vs sub_profile={target.sub_profile}"))
+            continue
+        plugin = get_plugin(tool.plugin)
+        if plugin is None:
+            cov.add(tool, _bridge_unavailable(tool))
+            continue
+        skip = args.strategy == "quick" and (
+            tool.tier not in quick_tiers and tool.plugin not in quick_plugins
+        )
+        if skip:
+            from runner import RunResult
+            cov.add(tool, RunResult(
+                tool.toolID, ExecutionStatus.SKIPPED, None, "", 0, 0, 0.0,
+                message="skipped by quick strategy (run --strategy full)"))
+            continue
+        # Electron lane: defer heavy PE decompilers (business logic is in asar)
+        if is_electron_pe and tool.toolID in heavy_defer:
+            from runner import RunResult
+            cov.add(tool, RunResult(
+                tool.toolID, ExecutionStatus.EXECUTION_FAILED, None, "", 0, 0, 0.0,
+                message="DEFERRED: Electron V8 shell — business logic in app.asar; "
+                        "full PE decompile not run (report §10). See electron_business lane."))
+            continue
+        result = plugin(tool, target.path, runner, force_skip=False)
+        cov.add(tool, result)
 
     cov.write(evdir / "coverage.json")
     agg = cov.aggregate()
@@ -215,11 +224,30 @@ def cmd_engagement_report(args):
 
 def cmd_dynamic(args):
     import subprocess
+    if not platselect.dynamic_windows_available():
+        print(f"[dynamic] {platselect.platform_note()}")
+        print("[dynamic] WSL Windows-interop unavailable on this platform.")
+        print("          macOS: use static analysis (otool/codesign) + lldb/frida instead "
+              "(Windows PE dynamic exec not possible).")
+        return
     script = ROOT / "scripts" / "dynamic_windows.py"
     cmd = [sys.executable, str(script), args.target, "--seconds", str(args.seconds)]
     if args.run:
         cmd.append("--run")
     subprocess.run(cmd)
+
+
+def cmd_stage_card(args):
+    import stage_card
+    name = Path(args.target).name
+    evdir = ROOT / "evidence" / name
+    if not (evdir / "coverage.json").exists():
+        print(f"no coverage.json at {evdir}. run analyze first.")
+        sys.exit(1)
+    out = stage_card.render(name, evdir, CATALOG_PATH)
+    card = stage_card.build(name, evdir, CATALOG_PATH)
+    print(json.dumps(card, ensure_ascii=False, indent=2))
+    print(f"\nstage-card -> {out}", file=sys.stderr)
 
 
 def main():
@@ -247,6 +275,8 @@ def main():
     p_dyn.add_argument("--run", action="store_true", help="actually spawn the PE (default dry-run)")
     p_dyn.add_argument("--seconds", type=int, default=4)
     p_dyn.set_defaults(func=cmd_dynamic)
+    p_sc = sub.add_parser("stage-card", help="emit AI stage-card JSON (coverage+remaining+retry)")
+    p_sc.add_argument("target"); p_sc.set_defaults(func=cmd_stage_card)
     args = ap.parse_args()
     args.func(args)
 

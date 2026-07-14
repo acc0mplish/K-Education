@@ -1,9 +1,15 @@
 {
-  "fullRequiredTools": 48,
-  "totalKnownTools": 57,
+  "fullRequiredTools": 76,
+  "totalKnownTools": 85,
   "missingCore": 4,
   "missingOptional": [
-    "mobsf"
+    "mobsf",
+    "metasploit",
+    "empire",
+    "sliver",
+    "covenant",
+    "pupy",
+    "shellter"
   ],
   "missingDeprecated": [
     "dsdump",
@@ -17,9 +23,9 @@
     "trid"
   ],
   "byInstallStatus": {
-    "present": 35,
-    "missing": 12,
-    "manual": 1
+    "present": 38,
+    "missing": 31,
+    "manual": 7
   },
   "tools": [
     {
@@ -405,6 +411,230 @@
       "catalogStatus": "missing",
       "installStatus": "present",
       "command": "yara"
+    },
+    {
+      "toolID": "vuln_license_seafile",
+      "tier": 7,
+      "installMethod": "harness",
+      "catalogStatus": "present",
+      "installStatus": "present",
+      "command": "python"
+    },
+    {
+      "toolID": "vuln_subscription",
+      "tier": 7,
+      "installMethod": "harness",
+      "catalogStatus": "present",
+      "installStatus": "present",
+      "command": "python"
+    },
+    {
+      "toolID": "bandit",
+      "tier": 8,
+      "installMethod": "pip",
+      "catalogStatus": "missing",
+      "installStatus": "missing",
+      "command": "bandit"
+    },
+    {
+      "toolID": "bulk_extractor",
+      "tier": 8,
+      "installMethod": "apt",
+      "catalogStatus": "missing",
+      "installStatus": "missing",
+      "command": "bulk_extractor"
+    },
+    {
+      "toolID": "ffuf",
+      "tier": 8,
+      "installMethod": "download",
+      "catalogStatus": "missing",
+      "installStatus": "missing",
+      "command": "ffuf"
+    },
+    {
+      "toolID": "gitleaks",
+      "tier": 8,
+      "installMethod": "download",
+      "catalogStatus": "missing",
+      "installStatus": "missing",
+      "command": "gitleaks"
+    },
+    {
+      "toolID": "gobuster",
+      "tier": 8,
+      "installMethod": "apt",
+      "catalogStatus": "missing",
+      "installStatus": "missing",
+      "command": "gobuster"
+    },
+    {
+      "toolID": "grype",
+      "tier": 8,
+      "installMethod": "download",
+      "catalogStatus": "missing",
+      "installStatus": "missing",
+      "command": "grype"
+    },
+    {
+      "toolID": "httpx",
+      "tier": 8,
+      "installMethod": "download",
+      "catalogStatus": "missing",
+      "installStatus": "missing",
+      "command": "httpx"
+    },
+    {
+      "toolID": "nikto",
+      "tier": 8,
+      "installMethod": "apt",
+      "catalogStatus": "missing",
+      "installStatus": "missing",
+      "command": "nikto"
+    },
+    {
+      "toolID": "nmap_vulners",
+      "tier": 8,
+      "installMethod": "apt",
+      "catalogStatus": "missing",
+      "installStatus": "missing",
+      "command": "nmap"
+    },
+    {
+      "toolID": "npm_audit",
+      "tier": 8,
+      "installMethod": "npm",
+      "catalogStatus": "missing",
+      "installStatus": "present",
+      "command": "npm"
+    },
+    {
+      "toolID": "nuclei",
+      "tier": 8,
+      "installMethod": "download",
+      "catalogStatus": "missing",
+      "installStatus": "missing",
+      "command": "nuclei"
+    },
+    {
+      "toolID": "pip_audit",
+      "tier": 8,
+      "installMethod": "pip",
+      "catalogStatus": "missing",
+      "installStatus": "missing",
+      "command": "pip-audit"
+    },
+    {
+      "toolID": "retirejs",
+      "tier": 8,
+      "installMethod": "npm",
+      "catalogStatus": "missing",
+      "installStatus": "missing",
+      "command": "retire"
+    },
+    {
+      "toolID": "semgrep",
+      "tier": 8,
+      "installMethod": "pip",
+      "catalogStatus": "missing",
+      "installStatus": "missing",
+      "command": "semgrep"
+    },
+    {
+      "toolID": "sqlmap",
+      "tier": 8,
+      "installMethod": "apt",
+      "catalogStatus": "missing",
+      "installStatus": "missing",
+      "command": "sqlmap"
+    },
+    {
+      "toolID": "trivy_fs",
+      "tier": 8,
+      "installMethod": "download",
+      "catalogStatus": "missing",
+      "installStatus": "missing",
+      "command": "trivy"
+    },
+    {
+      "toolID": "volatility3",
+      "tier": 8,
+      "installMethod": "pip",
+      "catalogStatus": "missing",
+      "installStatus": "missing",
+      "command": "vol"
+    },
+    {
+      "toolID": "whatweb",
+      "tier": 8,
+      "installMethod": "apt",
+      "catalogStatus": "missing",
+      "installStatus": "missing",
+      "command": "whatweb"
+    },
+    {
+      "toolID": "covenant",
+      "tier": 9,
+      "installMethod": "download",
+      "catalogStatus": "manual",
+      "installStatus": "manual",
+      "command": "dotnet"
+    },
+    {
+      "toolID": "empire",
+      "tier": 9,
+      "installMethod": "download",
+      "catalogStatus": "manual",
+      "installStatus": "manual",
+      "command": "empire"
+    },
+    {
+      "toolID": "hashcat",
+      "tier": 9,
+      "installMethod": "apt",
+      "catalogStatus": "missing",
+      "installStatus": "missing",
+      "command": "hashcat"
+    },
+    {
+      "toolID": "john",
+      "tier": 9,
+      "installMethod": "apt",
+      "catalogStatus": "missing",
+      "installStatus": "missing",
+      "command": "john"
+    },
+    {
+      "toolID": "metasploit",
+      "tier": 9,
+      "installMethod": "download",
+      "catalogStatus": "manual",
+      "installStatus": "manual",
+      "command": "msfconsole"
+    },
+    {
+      "toolID": "pupy",
+      "tier": 9,
+      "installMethod": "download",
+      "catalogStatus": "manual",
+      "installStatus": "manual",
+      "command": "pupysh"
+    },
+    {
+      "toolID": "shellter",
+      "tier": 9,
+      "installMethod": "download",
+      "catalogStatus": "manual",
+      "installStatus": "manual",
+      "command": "shellter"
+    },
+    {
+      "toolID": "sliver",
+      "tier": 9,
+      "installMethod": "download",
+      "catalogStatus": "manual",
+      "installStatus": "manual",
+      "command": "sliver"
     }
   ]
 }

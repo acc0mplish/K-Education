@@ -467,32 +467,45 @@ decompile 무의미 → 진짜 로직은 app.asar JS)를 **PE-중심 흐름에�
 - 한계(솔직): 자식 프로세스 환경변수(DAF_API_TOKEN)는 WMI로 읽기 불가 →
   PEB-walker 또는 frida 후킹 필요(별도 executor, deferred)
 
-### 15.C/E 미구현 (대안 확정, 선택 구현)
-- **#2 capa**: catalog에 rule 경로 지정(`tools/downloads/capa/rules`), capa 미설치라 검증 미완
-- **#3 retdec**: probe-first + asar 심볼 선택적 디컴파일(radare2만 적용)
-- **§12.5 applicability gate**: 2단계(format + content-structure) → archive/script 서브프로필이
-  object 도구(dwarfdump/lipo/nm/ktool) 자동 비적용. K-Education은 macOS 도구 제외로 회피 중
-- **#6 AI stage-card**: catalog+profile+remaining checklist JSON 주입 (사용자 선택 안 함)
+### 15.C/E 추가 구현 완료 (2026-06-22)
+- **#2 capa rule 경로 고정** ✅: `plugins/t_capa.py` — catalog `rulesPath`(tools/downloads/capa/rules)
+  존재 시 `capa --rules <path>`, 없으면 capa 번들룰. §13.3 exit-12 경로문제 해결.
+- **#3 retdec probe-first** ✅: `plugins/t_retdec.py` 재작성 — `--timeout 180 --backend-timeout 120`
+  probe 모드, runner timeout 600s 백스톱. 대형 PE full-decompile hang 회피.
+- **§12.5 applicability 2단계 게이트** ✅: `target_profile.sub_profile`(object/archive/script/network) +
+  `catalog.Tool.object_only`(targetProfiles ⊆ {pe,elf,mach_o}). main에서 object 도구 + archive/script
+  서브프로필 → 자동 target_not_applicable. MacRE asar→Mach-O 오분류 방어(정상 카탈로그에선 대기).
+- **#6 AI stage-card 주입** ✅: `harness/stage_card.py`, CLI `stage-card <target>` — 토큰효율 JSON
+  (platform + target + catalog byTier + coverage + remaining + retryPlan + nextSteps). 매 스테이지 LLM 주입용.
 
 ---
 
-## 16. macOS 앱 (계획)
+## 16. macOS 앱 — CLI 포트 (§16.a, 구현 완료 2026-06-22)
 
-원래 MacRE가 macOS 기반이므로, Linux/WSL2 하네스를 **macOS 포팅 + 네이티브 앱**으로 확장.
-형태 후보(확정 필요):
+형태 (a) 선택: 현재 Python 하네스를 macOS에서 그대로 실행. **플랫폼 자동 분기** — 코드는 Linux/WSL2에서 작성·로직 검증, macOS 도구 자체는 Mac에서만 실행·검증.
 
-| 후보 | 설명 | 장점 | 단점 |
-|---|---|---|---|
-| (a) macOS CLI 포트 | harness를 macOS에서 그대로 실행(otool/lipo/dwarfdump/nm 복원, Wine→미사용) | 빠름, 기존 코드 재사용 | GUI 없음 |
-| (b) Swift/SwiftUI 네이티브 앱 | macOS GUI 앱(도구 체크리스트·coverage·리포트 뷰) | 네이티스티c, 샌드박스 | 구현量大 |
-| (c) Electron/Tauri 래퍼 | 현재 하네스를 Tauri(Rust) 또는 Electron으로 래핑한 Mac 앱 | 코드 재사용, 크로스플랫폼 | 무거움 |
-| (d) Python + PyWebView | report.html을 띄우는 최소 Mac 앱 | 가벼움, 빠른 구현 | 네이티브 아님 |
+### 구현
+- `harness/platselect.py`: `platform.system()` 감지 → Darwin이면 `tool_catalog.macos.json`, 아니면 `tool_catalog.json`. 동적 실행(WSL interop) 가용성 게이트.
+- `tool_catalog.macos.json` (55 tools): Linux 49에서 wine/gdb 제거 + Mach-O 8개(otool/otool_hdr/lipo/dwarfdump/nm_mac/codesign/xattr/lldb) 추가. brew 전환(yara/exiftool/binwalk/ssdeep/radare2/rizin/osslsigncode/p7zip/foremost/innoextract/binutils). `sha256sum`→`shasum -a 256`.
+- `harness/plugins/t_otool.py`, `t_codesign.py`: macOS 네이티브 도구 브릿지(등록만, 위임 실행).
+- `tools/install_macos.sh`: clt/brew/pip/npm 분리 설치.
+- `tools/build_macos_catalog.py`: Linux→macOS 카탈로그 변환기(재생성 가능).
+- main.py: `platselect.catalog_path()` 사용; `dynamic` 명령 macOS 가드(WSL interop 없으면 정적/lldb 안내).
 
-macOS 특화 도구 매핑(포팅 시):
-- Linux `objdump/readelf/nm` → macOS `otool -L/-V, lipo, nm, dwarfdump`
-- Wine 동적 → 불가(macOS에서 Windows PE 동적 실행 안 됨) → 정적+에뮬레이션만
-- `osslsigncode` Authenticode → macOS에서도 동작
-- 새 도구: `class-dump`(Obj-C), `swift-demangle`, `MachOView`, `bagbak`(iOS)
+### macOS vs Linux 차이
+| 항목 | Linux/WSL2 | macOS |
+|---|---|---|
+| 객체 분석 | objdump/readelf/nm | otool(-L/-hv)/lipo/dwarfdump/nm_mac |
+| 서명 | osslsigncode(PE) | codesign(Mach-O) + osslsigncode(PE) |
+| 격리 | xattr(없음) | xattr(quarantine/Gatekeeper) |
+| 디버거 | gdb | lldb |
+| 동적(Win PE) | Wine + WSL interop(powershell.exe) | **불가**(정적+frida/lldb+qiling만) |
+| Mach-O | target_not_applicable | otool/lipo/dwarfdump/codesign 주력 |
+
+### 한계 (솔직)
+- macOS 도구(otool/codesign 등)는 본 환경(Linux/WSL2)에서 **실행·검증 불가** → Mac에서 `install_macos.sh` 실행 후 `tool-check`/`analyze` 검증 필요.
+- 카탈로그 생성·플랫폼 분기 로직은 Linux에서 검증 완료.
+- Swift/SwiftUI 네이티브 GUI(후보 b)는 별도 작업(미구현).
 
 ---
 

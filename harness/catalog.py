@@ -29,6 +29,14 @@ class Tool:
     def applies_to(self, profile: str) -> bool:
         return profile in self.target_profiles
 
+    @property
+    def object_only(self) -> bool:
+        """Object-introspection tool: targetProfiles ⊆ {pe, elf, mach_o}.
+        Used by the §12.5 content-structure gate to exclude these from
+        archive/script sub-profiles (defense vs asar->Mach-O misclassification)."""
+        obj = {"pe", "elf", "mach_o"}
+        return bool(self.target_profiles) and set(self.target_profiles).issubset(obj)
+
 
 class ToolCatalog:
     def __init__(self, catalog_path: str | Path):
