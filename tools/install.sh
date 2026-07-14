@@ -3,8 +3,9 @@
 # Usage:
 #   sudo bash tools/install.sh apt        # apt packages (incl. wine64 + §17 red-team apt tools)
 #   bash   tools/install.sh pip           # venv python packages (no sudo, incl. §17 bandit/semgrep/pip-audit/volatility3)
-#   bash   tools/install.sh npm           # node asar tooling (no sudo, incl. §17 retire.js)
+#   bash   tools/install.sh npm           # node asar tooling (no sudo, incl. §17 retire.js + wakaru + webcrack)
 #   sudo bash tools/install.sh redteam    # §17 Go-binary tools from GitHub releases (nuclei/httpx/ffuf/gitleaks/trivy/grype)
+#   bash   tools/install.sh depcheck      # §17 OWASP Dependency-Check tarball (JVM SCA; needs JDK from apt case)
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -37,6 +38,7 @@ apt_pkgs_redteam=(
   bulk-extractor
   whatweb
   gobuster
+  default-jre
 )
 # Go-binary red-team tools pulled from GitHub releases (latest, linux amd64/arm64).
 # slug=binary — see install_redteam_go below.
@@ -101,9 +103,12 @@ install_npm() {
   mkdir -p "$ROOT/harness/node_tools"
   (cd "$ROOT/harness/node_tools" && npm init -y >/dev/null 2>&1 || true
    npm install @electron/asar adm-zip)
-  # §17 red-team: retire.js CLI for known-vuln JS library detection
-  (cd "$ROOT/harness/node_tools" && npm install retire) \
-    || echo "WARN: retire.js npm install failed (ok)"
+  # §17 red-team: retire.js CLI (known-vuln JS libs) + frontend deobfuscators
+  #   retire.js       — known-vuln JS library detection
+  #   @wakaru/cli     — webpack/esbuild/browserify bundle unpacker (Rust)
+  #   webcrack        — obfuscator.io/webpack deobfuscator + unminifier
+  (cd "$ROOT/harness/node_tools" && npm install retire @wakaru/cli webcrack) \
+    || echo "WARN: some red-team npm packages failed (ok)"
 }
 
 # §17 red-team: download single-binary Go tools from GitHub releases.
@@ -148,12 +153,52 @@ install_redteam_go() {
   fi
 }
 
+# §17 red-team: OWASP Dependency-Check (Java SCA, complements retirejs for
+# Maven/Gradle/JAR). Not a single Go binary — download the release tarball,
+# extract under redteam_tools/, symlink the .sh launcher into BINDIR.
+# Requires JDK (default-jre in apt_pkgs_redteam). First run downloads the NVD
+# CVE cache (~hundreds of MB; slow on cold start).
+install_redteam_depcheck() {
+  local bindir="${REDTEAM_BINDIR:-/usr/local/bin}"
+  local dest="$ROOT/harness/redteam_tools"
+  mkdir -p "$dest" "$bindir" 2>/dev/null || { echo "ERR: cannot write $dest/$bindir (run as root or set REDTEAM_BINDIR)"; return 1; }
+  command -v curl >/dev/null 2>&1 || { echo "ERR: curl required for dependency-check download"; return 1; }
+  command -v unzip >/dev/null 2>&1 || { echo "ERR: unzip required for dependency-check"; return 1; }
+  local slug="dependency-check/DependencyCheck"
+  # resolve latest tag via the /releases/latest redirect (NOT the api.github.com
+  # JSON endpoint — that 403s under GitHub's 60/hr unauthenticated rate limit).
+  local redir tag ver
+  redir="$(curl -fsSL -o /dev/null -w '%{url_effective}' "https://github.com/$slug/releases/latest" 2>/dev/null)" \
+    || { echo "WARN: dependency-check — could not resolve latest release"; return 1; }
+  tag="${redir##*/}"                       # e.g. v12.2.2
+  ver="${tag#v}"                           # e.g. 12.2.2
+  [ -n "$ver" ] || { echo "WARN: dependency-check — could not parse version from $redir"; return 1; }
+  local url="https://github.com/$slug/releases/download/${tag}/dependency-check-${ver}-release.zip"
+  local tmp; tmp="$(mktemp -d)"
+  echo ">> dependency-check: $slug $tag -> $dest"
+  if curl -fsSL "$url" -o "$tmp/dc.zip" && unzip -q -o "$tmp/dc.zip" -d "$dest"; then
+    # launcher lands at $dest/dependency-check/bin/dependency-check.sh
+    local launch="$dest/dependency-check/bin/dependency-check.sh"
+    if [ -f "$launch" ]; then
+      chmod +x "$launch"
+      ln -sf "$launch" "$bindir/dependency-check"
+      echo ">> dependency-check symlinked: $bindir/dependency-check -> $launch"
+    else
+      echo "WARN: dependency-check launcher not found at expected path ($launch)"
+    fi
+  else
+    echo "WARN: dependency-check download/extract failed"
+  fi
+  rm -rf "$tmp"
+}
+
 case "${1:-all}" in
   apt)        install_apt ;;
   pip)        install_pip ;;
   npm)        install_npm ;;
   redteam)    install_redteam_go ;;
-  all)        install_pip; install_npm; install_redteam_go; echo ">> run 'sudo bash tools/install.sh apt' for system tools (incl. red-team apt pkgs)";;
-  *)          echo "usage: install.sh [apt|pip|npm|redteam|all]"; exit 2 ;;
+  depcheck)   install_redteam_depcheck ;;
+  all)        install_pip; install_npm; install_redteam_go; install_redteam_depcheck; echo ">> run 'sudo bash tools/install.sh apt' for system tools (incl. red-team apt pkgs + default-jre)";;
+  *)          echo "usage: install.sh [apt|pip|npm|redteam|depcheck|all]"; exit 2 ;;
 esac
 echo ">> done: $1"

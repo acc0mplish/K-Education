@@ -46,16 +46,25 @@ class ToolRunner:
         self.evidence.mkdir(parents=True, exist_ok=True)
         self.env = runner_env or {}
 
+    def _bin_fallback_dirs(self) -> list[str]:
+        """Extra dirs to probe when a command isn't on PATH:
+        distro fallbacks (e.g. Ubuntu wine9 -> /usr/lib/wine) + the harness
+        npm node_tools/.bin where retire/wakaru/webcrack CLIs land."""
+        return [
+            "/usr/lib/wine",
+            str(self.root / "harness" / "node_tools" / "node_modules" / ".bin"),
+        ]
+
     def installed(self, tool: Tool) -> bool:
         """Check if a tool's command is resolvable (PATH + known fallbacks)."""
         if tool.install_status in (InstallStatus.PRESENT.value,):
             return True
         if tool.install_status in (InstallStatus.MANUAL.value, InstallStatus.DEPRECATED.value):
             return False
-        # missing: probe PATH, then distro fallback dirs (e.g. Ubuntu wine9 -> /usr/lib/wine)
+        # missing: probe PATH, then fallback dirs (wine, harness npm node_tools/.bin)
         if shutil.which(tool.command) is not None:
             return True
-        for d in ("/usr/lib/wine",):
+        for d in self._bin_fallback_dirs():
             cand = os.path.join(d, tool.command)
             if os.path.exists(cand):
                 return True
@@ -64,8 +73,8 @@ class ToolRunner:
     def build_argv(self, tool: Tool, target: str, outdir: str) -> list[str]:
         cmd = shutil.which(tool.command) or tool.command
         if cmd == tool.command and not shutil.which(cmd):
-            # try distro fallback dirs so subprocess can exec off-PATH binaries
-            for d in ("/usr/lib/wine",):
+            # try fallback dirs so subprocess can exec off-PATH binaries
+            for d in self._bin_fallback_dirs():
                 cand = os.path.join(d, tool.command)
                 if os.path.exists(cand):
                     cmd = cand

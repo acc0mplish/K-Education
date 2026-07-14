@@ -1,9 +1,9 @@
 {
   "_meta": {
-    "version": "1.1.0",
+    "version": "1.2.0",
     "generated": "2026-06-20",
     "source": "MacRE §13 hardened harness (Linux/WSL2 adaptation)",
-    "note": "50 binary-RE tools + §17 red-team assessment lane (26 tools: static audit + web dynamic + forensics + offline password + C2 stubs). macOS-only Mach-O tools excluded; Linux equivalents substituted. C2 frameworks are stub-only (operator manual, isolated lab, consented targets) — harness does NOT weaponize/automate them.",
+    "note": "50 binary-RE tools + §17 red-team assessment lane (34 tools: static audit + web dynamic + forensics + offline password + C2 stubs + frontend deobf/SCA). macOS-only Mach-O tools excluded; Linux equivalents substituted. C2 frameworks are stub-only (operator manual, isolated lab, consented targets) — harness does NOT weaponize/automate them.",
     "terminalStates": ["executed", "target_not_applicable", "execution_failed", "timeout_deferred_retry", "manual_install", "install_failed", "bridge_unavailable"]
   },
   "tools": [
@@ -92,7 +92,17 @@
     {"toolID": "sliver",        "tier": 9, "install": {"method": "download", "status": "manual"}, "command": "sliver", "args": [], "targetProfiles": ["network","pe"], "timeout": 0, "plugin": "stub", "note": "§17 RED adversary-simulation C2 — OPERATOR MANUAL ONLY: isolated lab, consented targets."},
     {"toolID": "covenant",      "tier": 9, "install": {"method": "download", "status": "manual"}, "command": "dotnet", "args": [], "targetProfiles": ["network"], "timeout": 0, "plugin": "stub", "note": "§17 RED C# post-exploitation platform — OPERATOR MANUAL ONLY: isolated lab, consented targets."},
     {"toolID": "pupy",          "tier": 9, "install": {"method": "download", "status": "manual"}, "command": "pupysh", "args": [], "targetProfiles": ["network","pe"], "timeout": 0, "plugin": "stub", "note": "§17 RED cross-platform RAT — OPERATOR MANUAL ONLY: isolated lab, consented targets. Harness does NOT generate/deploy implants."},
-    {"toolID": "shellter",      "tier": 9, "install": {"method": "download", "status": "manual"}, "command": "shellter", "args": [], "targetProfiles": ["pe"], "timeout": 0, "plugin": "stub", "note": "§17 RED dynamic shellcode injector — OPERATOR MANUAL ONLY: isolated lab, consented targets. Harness does NOT trojanize binaries automatically."}
+    {"toolID": "shellter",      "tier": 9, "install": {"method": "download", "status": "manual"}, "command": "shellter", "args": [], "targetProfiles": ["pe"], "timeout": 0, "plugin": "stub", "note": "§17 RED dynamic shellcode injector — OPERATOR MANUAL ONLY: isolated lab, consented targets. Harness does NOT trojanize binaries automatically."},
+
+    {"toolID": "wakaru_unpack", "tier": 8, "install": {"method": "npm", "status": "missing"}, "command": "wakaru", "args": ["{target}", "--unpack", "-o", "{outdir}/wakaru", "--force"], "targetProfiles": ["directory","zip","asar"], "timeout": 600, "plugin": "generic_cli", "note": "§17 RED frontend-deobf: @wakaru/cli --unpack webpack/esbuild/browserify bundle into readable modules (Rust; default run also deobfuscates)"},
+    {"toolID": "webcrack",      "tier": 8, "install": {"method": "npm", "status": "missing"}, "command": "webcrack", "args": ["{target}", "-o", "{outdir}/webcrack", "-f"], "targetProfiles": ["directory","zip","asar"], "timeout": 600, "plugin": "generic_cli", "note": "§17 RED frontend-deobf: deobfuscate obfuscator.io + unminify + unpack webpack/browserify (-f overwrite outdir)"},
+    {"toolID": "dependency_check", "tier": 8, "install": {"method": "download", "status": "missing"}, "command": "dependency-check", "args": ["--scan", "{target}", "--format", "JSON", "--out", "{outdir}/depcheck", "--project", "redteam-target"], "targetProfiles": ["directory","zip"], "timeout": 1800, "plugin": "generic_cli", "note": "§17 RED SCA: OWASP Dependency-Check known-vuln scan (Maven/Gradle/JAR; complements retirejs for non-npm). Needs JDK; first run downloads NVD cache (~slow)."},
+
+    {"toolID": "jsnice",        "tier": 8, "install": {"method": "manual", "status": "manual"}, "command": "", "args": [], "targetProfiles": ["directory","zip","asar"], "timeout": 0, "plugin": "stub", "note": "§17 RED frontend-deobf (MANUAL): JSNice ML variable/function-name restoration — jsnice.org web service. Operator pastes bundle; no CLI."},
+    {"toolID": "jsdetox",       "tier": 8, "install": {"method": "manual", "status": "manual"}, "command": "", "args": [], "targetProfiles": ["directory","zip","asar"], "timeout": 0, "plugin": "stub", "note": "§17 RED frontend-deobf (MANUAL): JSDetox Ruby local-server deobfuscator. Run manually; not automated."},
+    {"toolID": "ast_explorer",  "tier": 8, "install": {"method": "manual", "status": "manual"}, "command": "", "args": [], "targetProfiles": ["directory","zip","asar"], "timeout": 0, "plugin": "stub", "note": "§17 RED frontend-deobf (MANUAL): AST visualizer (astexplorer.net) for authoring webcrack/wakaru custom transforms."},
+    {"toolID": "burp",          "tier": 8, "install": {"method": "manual", "status": "manual"}, "command": "", "args": [], "targetProfiles": ["network"], "timeout": 0, "plugin": "stub", "note": "§17 RED web-dynamic (MANUAL): Burp Suite proxy for HTTP intercept/replay. GUI; pair with webcrack PoC insertion. Operator-run on authorized scope."},
+    {"toolID": "local_map_ext", "tier": 8, "install": {"method": "manual", "status": "manual"}, "command": "", "args": [], "targetProfiles": ["network"], "timeout": 0, "plugin": "stub", "note": "§17 RED web-dynamic (MANUAL): Chrome Map-Local/Framer extension — swap served bundle with deobfuscated+instrumented copy for runtime PoC."}
   ],
   "deprecated": ["dsdump", "otool", "lipo", "dwarfdump", "ktool", "swift_section", "strongarm", "pe_tree", "trid"]
 }
