@@ -12,6 +12,23 @@ tools/downloads/
 daf-launcher-*.zip
 *.zip
 
+# Education analysis targets — proprietary 3rd-party installers + decompiled
+# output (large, copyright, regenerable). KLIC-Aditus 39GB, _work 819MB, etc.
+education/*.dmg
+education/*.msi
+education/*.exe
+education/*.tar.gz
+education/*.7z
+education/KLIC-Aditus/
+education/_work/
+education/Watch_v2_restored/
+
+# Downloaded red-team tools (regenerable via tools/install.sh depcheck/redteam)
+harness/redteam_tools/
+
+# Root binary artifacts (regenerable presentations / dumps)
+/KLIC_Universe_2026.pptx
+
 # SDD scratch
 .superpowers/
 
