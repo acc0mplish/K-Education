@@ -23,6 +23,19 @@ education/KLIC-Aditus/
 education/_work/
 education/Watch_v2_restored/
 
+# NetApp XCP RE — tarball + large extracted/decompiled output (regenerable).
+# Deliverables kept: education/NETAPP_XCP_1.9.4P1/xcp_license/
+education/*.tgz
+education/license.tt
+education/NETAPP_XCP_1.9.4P1/xcp/linux/ext39/
+education/NETAPP_XCP_1.9.4P1/xcp/linux/xcp_extracted/
+education/NETAPP_XCP_1.9.4P1/xcp/windows/*_extracted/
+education/NETAPP_XCP_1.9.4P1/xcp/xcp_gui/*_extracted/
+
+# RE toolchain (user-space, regenerable)
+education/tools/venv39/
+education/tools/pycdc/build/
+
 # Downloaded red-team tools (regenerable via tools/install.sh depcheck/redteam)
 harness/redteam_tools/
 
@@ -31,6 +44,9 @@ harness/redteam_tools/
 
 # SDD scratch
 .superpowers/
+
+# Design specs/plans (local working docs, not tracked)
+/docs/
 
 # Generated engagement report docs (output, not source)
 education/reports/engagements/
