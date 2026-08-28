@@ -39,5 +39,5 @@ python education/black_team/black_runner.py /path/to/own_target.cfg --i-own-this
 > `docs/BLUE_TEAM.md` + `t_vuln_license_seafile` 의 Expiration 강제 영역.
 
 ## 윤리
-본 PoC = **generic 원리 시연**. 본인 소유 앱/취약랩 외 실행 금지. 시계 회전은 격리
-랩에서만. 타인 시스템·서비스 공격 금지.
+본 PoC = **generic 원리 시연**. 본인 소유 앱/취약랩 외 실행 금지. 시계 회전은 격리 랩에서만. 타인 시스템·서비스 공격 금지.
+모든 분석은 **로컬 LLM 전용** (데이터 유출 없음, main README §0).

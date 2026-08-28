@@ -40,5 +40,6 @@ python education/black_team/attacks/circumvent/poc_circumvent.py <own_file> --i-
 > `docs/BLUE_TEAM.md`의 D1(클라이언트 상태 신뢰 금지) 영역.
 
 ## 윤리
-본 PoC = **generic 게이트 시연**. 본인 소유 앱/취약랩 외 실행 금지. frida 등
+본 PoC = **generic 게이트 시연**.
+모든 분석은 **로컬 LLM 전용** (데이터 유출 없음, main README §0). 본인 소유 앱/취약랩 외 실행 금지. frida 등
 동적 도구는 격리 랩에서만. 타인 시스템·서비스 공격 금지.

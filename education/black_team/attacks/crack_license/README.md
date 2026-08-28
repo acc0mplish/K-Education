@@ -39,5 +39,5 @@ python education/black_team/black_runner.py /path/to/own_target_license.txt --i-
 > `harness/plugins/t_vuln_license_seafile.py`의 라이선스 파일 스캔과 1:1 대응.
 
 ## 윤리
-본 PoC = **generic 위조 시제 시연** (실제 상용 키 생성 아님). 본인 소유 앱/취약랩
-외 실행 금지. 배포용 크랙/keygen/범용 패처 미제공.
+본 PoC = **generic 위조 시제 시연** (실제 상용 키 생성 아님). 본인 소유 앱/취약랩 외 실행 금지. 배포용 크랙/keygen/범용 패처 미제공.
+모든 분석은 **로컬 LLM 전용** (데이터 유출 없음, main README §0)

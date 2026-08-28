@@ -48,8 +48,11 @@ python education/black_team/black_runner.py demo_target.py --i-own-this
   # → evidence/<t>/vuln_license.out (Blue)
   ```
 
-## 윤리 (HARD)
+## 윤리 (로컬 LLM 기반)
 
-- 본인 소유 앱 · 의도적 취약랩 외 실행 금지.
-- 배포용 크랙/keygen/범용 패처·DoS 도구·실제 상용 소프트 우회 금지.
-- 타인 시스템·서비스 공격·저작물 복제 금지.
+본 랩은 **로컬 LLM + owned/lab** 환경에서 동작하여 데이터 유출·원격 개입 리스크가
+낮다. 아래는 기본 원칙.
+
+- 본인 소유 앱 · 의도적 취약랩 대상 (`--i-own-this` 필수).
+- 배포용 크랙/keygen/범용 패처·DoS 도구 등은 원칙적으로 제공 안 함.
+-본인 소유/권한 받은 시스템 외 공격·저작물 복제는 피해.

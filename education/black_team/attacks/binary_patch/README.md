@@ -44,4 +44,4 @@ python education/black_team/black_runner.py /path/to/own_target.bin --i-own-this
 
 ## 윤리
 본 PoC = **generic 원리 시연**. 본인 소유 앱·취약랩 외 실행 금지 (`--i-own-this` 필수).
-배포용 크랙/keygen/범용 패처 미제공.
+배포용 크랙/keygen/범용 패처 미제공. 모든 분석은 **로컬 LLM 전용** (데이터 유출 없음, main §0).
