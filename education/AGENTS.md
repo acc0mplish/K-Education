@@ -2,12 +2,17 @@
 
 ## Project Structure & Module Organization
 
-- `attacks/<lane>/` stores red/blue mapping documents for each attack lane.
-- `redteam/` contains owned-lab PoC runners and payload fixtures; `redteam/run_redteam.py` writes evidence JSON.
-- `labs/` documents intentionally vulnerable local lab setup.
-- `reports/templates/` and `reports/engagements/` hold red/blue plan and result documents.
+Team outputs live at the repo root under three folders (see `CLAUDE.md` for placement rules):
+
+- `black_team/` — offensive/crack research. `attacks/<type>/` (PoC), `ghidra/scripts/` (Ghidra/analysis tools), `targets/` (binary samples), `evidence/` (findings).
+- `red_team/` — red-team attack simulation (payloads, subscription mock, `run_redteam.py`).
+- `blue_team/` — blue-team defense/validation analysis.
+- `docs/` — project-wide reports and source designs.
+- `education/` — learning/annotation side-material (mostly gitignored).
 - `KLIC-Aditus/` is a Bun + Rust workspace: `apps/desktop/` is React/Tauri, `packages/` holds shared TypeScript packages, `crates/` holds Rust libraries, and `server/` is the Rust backend.
 - Treat `_work/`, `target/`, `dist/`, and `node_modules/` as generated or extracted artifacts.
+
+**Rule:** never scatter new outputs. Place them under the team folder above per `CLAUDE.md`.
 
 ## Build, Test, and Development Commands
 
