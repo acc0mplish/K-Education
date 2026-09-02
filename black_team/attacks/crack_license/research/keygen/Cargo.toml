@@ -1,0 +1,15 @@
+[package]
+name = "keygen"
+version = "0.1.0"
+edition = "2021"
+
+[[bin]]
+name = "keygen"
+path = "src/keygen.rs"
+
+[dependencies]
+pgp = "=0.19.0"
+prost = "=0.14.4"
+base64 = "0.22"
+rand = "0.8"
+smallvec = "1.13"

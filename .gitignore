@@ -1,0 +1,72 @@
+# Python
+__pycache__/
+*.py[cod]
+harness/.venv/
+
+# Node
+harness/node_tools/node_modules/
+
+# Analysis output / large binaries (regenerable, proprietary targets)
+evidence/
+tools/downloads/
+daf-launcher-*.zip
+*.zip
+
+# Education analysis targets — proprietary 3rd-party installers + decompiled
+# output (large, copyright, regenerable). KLIC-Aditus 39GB, _work 819MB, etc.
+# 2026-08-17: education/ 전체 비추적으로 전환 (아래 세부 규칙은 이미 tracked된
+# 파일에는 영향 없음 — 신규 파일만 막힘)
+education/
+education/*.dmg
+education/*.msi
+education/*.exe
+education/*.tar.gz
+education/*.7z
+education/KLIC-Aditus/
+education/_work/
+education/Watch_v2_restored/
+
+# NetApp XCP RE — tarball + large extracted/decompiled output (regenerable).
+# Deliverables kept: education/NETAPP_XCP_1.9.4P1/xcp_license/
+education/*.tgz
+education/license.tt
+education/NETAPP_XCP_1.9.4P1/xcp/linux/ext39/
+education/NETAPP_XCP_1.9.4P1/xcp/linux/xcp_extracted/
+education/NETAPP_XCP_1.9.4P1/xcp/windows/*_extracted/
+education/NETAPP_XCP_1.9.4P1/xcp/xcp_gui/*_extracted/
+
+# RE toolchain (user-space, regenerable)
+education/tools/venv39/
+education/tools/pycdc/build/
+
+# Downloaded red-team tools (regenerable via tools/install.sh depcheck/redteam)
+harness/redteam_tools/
+
+# Root binary artifacts (regenerable presentations / dumps)
+/KLIC_Universe_2026.pptx
+
+# SDD scratch
+.superpowers/
+
+# Design specs/plans (local working docs, not tracked)
+/docs/
+
+# Generated engagement report docs (output, not source)
+education/reports/engagements/
+
+# misc
+*.log
+.DS_Store
+
+# 2026-09-02: black_team license 분석 산출물(분석 결과물)만 비추적
+education/black_team/attacks/crack_license/FINDINGS.txt
+education/black_team/attacks/crack_license/rsa.key
+education/black_team/attacks/crack_license/license-crypto-analysis.md
+
+# 2026-09-02: team 폴더로 원위화 — 산출물(결과물)은 비추적, 도구는 추적
+black_team/attacks/crack_license/FINDINGS.txt
+black_team/attacks/crack_license/rsa.key
+black_team/attacks/crack_license/license-crypto-analysis.md
+black_team/ghidra/program/
+black_team/ghidra/app/
+black_team/ghidra/*.DS_Store
