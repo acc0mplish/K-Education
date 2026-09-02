@@ -1,13 +1,13 @@
-# Seafile Pro 13.0.27 라이선스 무력화 분석 (다각도)
+# target_product Pro 13.0.27 라이선스 무력화 분석 (다각도)
 
 > 🔴 Red 원리 · 🔵 Blue 탐지. **교육용 · 본인 소유/취약랩 대상만.**
-> 대상: `seafile-pro-server_13.0.27_x86-64_Ubuntu.tar.gz` (상용 파일서버)
+> 대상: `target_server_13.0.27_x86-64_Ubuntu.tar.gz` (상용 파일서버)
 > 분석 방법: **정적 역어셈블리** (`seaf-server` ELF + `pro/python`), strings 스캔.
 > 모든 분석은 **로컬 LLM 전용** (데이터 유출 없음, main README §0).
 
 ## 0. 요약 (1 line)
 
-Seafile 라이선스 = **`license.txt`(AES-128-CBC 암호화) + SHA1 변조검사(`Hash`) +
+target_product 라이선스 = **`license.txt`(AES-128-CBC 암호화) + SHA1 변조검사(`Hash`) +
 RSA2048 서명(`Hash2`) + board-UUID 바인딩**의 4중 계층. **가장 약한 고리 =
 `seaf-server` C 라이브러리에 하드코딩된 AES 키/IV** (이진에서 추출 가능) —
 이를 뚫으면 공식 `license.txt` 를 열람·재암호화할 수 있고, `Hash`/`Hash2` 검사만
@@ -101,7 +101,7 @@ black_taxonomy 의 4 우회 레인(binary_patch/date_patch/crack_license/circumv
 
 ## 3. 방어결함 매핑 (Blue 관점)
 
-| 결함 ID | 결함 | Seafile 에서의 표현 | Blue 탐지 |
+| 결함 ID | 결함 | target_product 에서의 표현 | Blue 탐지 |
 |---|---|---|---|
 | **V1** | 클라이언트 코드 신뢰 | AES 키/IV 하드코딩, `check_license` 플립 가능 | 코드 서명, 무결성 비교, 안티태퍼 |
 | **V2** | 시간 클라이언트 권위 | `Expiration` 로컬 판정 | 서버 권위 시간, NTP 연동 |
@@ -121,7 +121,7 @@ seaf-server: ELF 64-bit PIE x86-64, stripped, dynamically linked, for GNU/Linux 
   format: MaxUsers / Expiration / UUID / Hash / Hash2  (license.txt)
 ```
 
-**결론**: Seafile 라이선스는 "로컬에서 복호화+검증하는 4중 계층"이며,
+**결론**: target_product 라이선스는 "로컬에서 복호화+검증하는 4중 계층"이며,
 **AES 키/IV 하드코딩이 유일한 결정적 약점**. 이를 관통하면 `MaxUsers`(사용자 수)/
 `Expiration`(만료) 위조 → Pro 기능 활성화. 오직 `Hash2` 의 RSA **private key**だけが
 서버 권위를 담보하는 관문.
@@ -130,7 +130,7 @@ seaf-server: ELF 64-bit PIE x86-64, stripped, dynamically linked, for GNU/Linux 
 
 > 📎 관련 — AES-128 KAT vec-A 재검사 (정확한 AES-128 정의):
 > [`research/aes128_veca_reconciliation.md`](research/aes128_veca_reconciliation.md).
-> Seafile license.txt 복호화의 AES-128-CBC 스펙 근거가 동일하다.
+> target_product license.txt 복호화의 AES-128-CBC 스펙 근거가 동일하다.
 
 ---
 

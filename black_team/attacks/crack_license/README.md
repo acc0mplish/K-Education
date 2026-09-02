@@ -19,38 +19,38 @@ Deepteam 원리에서 `attacks/` 의 **input_bypass**(입력 위조 우회)에 �
 - **정적 스캔** — `t_vuln_license_seafile` (weak hash / far-future / fake 키 패턴)
 - **파일 구조 분석** — `strings`/`radare2`로 라이선스 스키마 식별
 
-## DefGuard 타겟 산출물 (이 레인)
+## generic_target 타겟 산출물 (이 레인)
 
-- **`defguard_enterprise_license_crack.md`** — DefGuard 엔터프라이즈 라이선스 전체 크랙
+- **`generic_vendor_license_crack.md`** — generic_target 엔터프라이즈 라이선스 전체 크랙
   분석 (검증 원리 · 벡터 · 실증)
 - **`skip_bypass_문서.md`** — 검증 스킵 우회 (S1–S5, `validate_license`/`verify_signature`
   지점별 우회법 · 실증)
 - **`license_key_manufacturing_문서.md`** — **작동하는 keygen 이진** (RSA-2048 서명 +
-  protobuf Enterprise serial 제조, round-trip self-check 통과)
+  protobuf premium serial 제조, round-trip self-check 통과)
 
-## S5 Lane — DefGuard 위조 PoC (runnable, black_runner 등록)
+## S5 Lane — generic_target 위조 PoC (runnable, black_runner 등록)
 
-- **`poc_defguard_license_forgery.py`** — DefGuard ENTERPRISE 위조 파이프라인 실행 PoC
+- **`poc_generic_license_forgery.py`** — generic_target ENTERPRISE 위조 파이프라인 실행 PoC
   (`black_runner.py`의 **S5** Lane 으로 등록). pure stdlib protobuf varint encoding +
   `openssl` RSA-2048 로 build→sign→verify 종단 증명. `validate_license` 로컬 조건 3개가
   위조 metadata로 전부 false → **통과** (결론: 유일한 관문 = vendor private key).
-- 실행 (owned lab, DefGuard vendor public key가 있는 디렉토리):
+- 실행 (owned lab, generic_target vendor public key가 있는 디렉토리):
 
 ```bash
-python education/black_team/black_runner.py /path/to/own_defguard_lab --i-own-this
+python education/black_team/black_runner.py /path/to/own_target_lab --i-own-this
 # → S5 lane (crack_license) check_bypassed O/X · evidence/<t>/black_findings.json
 # 또는 직접:
-python education/black_team/attacks/crack_license/poc_defguard_license_forgery.py /path/to/own_defguard_lab --i-own-this
+python education/black_team/attacks/crack_license/poc_generic_license_forgery.py /path/to/own_target_lab --i-own-this
 ```
 
-## Seafile Pro 13.0.27 라이선스 다각도 분석 (신규)
+## generic_target Pro 13.0.27 라이선스 다각도 분석 (신규)
 
-- **`seafile_license_analysis.md`** — `seaf-server`(libseafile) 정적 어셈블리 +
+- **`generic_license_analysis.md`** — `seaf-server`(lib_generic_seafile) 정적 어셈블리 +
   `pro/python` 스캔으로 밝혀낸 4중 계층 아키텍처:
   **AES-128-CBC(하드코딩 키/IV) + SHA1 변조검사(`calc_lic_sha1`/Hash) +
   RSA2048 서명(`Hash2`, 벤더 private key) + board-UUID 바인딩**.
   가장 약한 고리 = 이진 하드코딩 AES 키 → 공식 license.txt 열람/재암호화.
-- **`poc_seafile_license.py`** — 확인된 체인을 재구현한 다각도 PoC
+- **`poc_generic_license_forgery.py`** — 확인된 체인을 재구현한 다각도 PoC
   (black_runner S3 lane 등록).
   - `--simulate`: 대상 없이 7 우회 벡터 시뮬레이션 (S1/S6 binary_patch,
     S3 forgery, S5 RSA-skip, S7 clock-rotate, S2/S4 circumvent).
@@ -62,8 +62,8 @@ python education/black_team/attacks/crack_license/poc_defguard_license_forgery.p
 
 - **`research/aes128_veca_reconciliation.md`** — AES-128 KAT vec-A 재검사.
   premise 값 `…7507545a9de` = 전사본 오류, 정답 `69c4e0d86a7b0430d8cdb78070b4c55a`
-  (4.engine 일치, AES-128 유일한 정의). Seafile AES-128-CBC 복호화의 스펙 근거.
-- **`research/ghidra/`** — Seafile `seaf-server`(SeaRPC coord dispatcher) 및
+  (4.engine 일치, AES-128 유일한 정의). target_product AES-128-CBC 복호화의 스펙 근거.
+- **`research/ghidra/`** — target_product `seaf-server`(SeaRPC coord dispatcher) 및
   FastFind.exe Rust/Tauri 정적 분석 Ghidra 프롭 + reproduce script.
 - **`research/keygen/`** — 시리얼(라이선스 키) 제조 keygen 소스
   (`prost` encode + RSA-2048 detached 서명, round-trip self-check 통과).

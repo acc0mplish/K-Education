@@ -1,17 +1,17 @@
-# DefGuard 엔터프ライ즈 라이선스 크랙 (Empirical License-Crack Analysis)
+# vendor_product 엔터프ライ즈 라이선스 크랙 (Empirical License-Crack Analysis)
 
 > 🎓 교육용 · 본인 소유/인가된 자산 대상. 본 문서는 **복제 방지 기술 분석** 연구 산출물이며,
 > 실제 상용 키를 생성/배포하는 keygen 아님. `education/` 은 로컬 gitignore 대상 (비추적).
 
-- **타겟**: [DefGuard](https://github.com/DefGuard/defguard) (AGPL dual-license, open-code enterprise)
+- **타겟**: [vendor_product](https://github.com/vendor_product/defguard) (AGPL dual-license, open-code enterprise)
 - **레이인**: `crack_license` (TAXONOMY S3/S5 — 라이선스 파일 위조 + 검증 로직 우회)
-- **검증 환경**: `pgp 0.19.0`, `prost 0.14.4` (DefGuard Cargo.lock 과 동일 버전)로 재구현
+- **검증 환경**: `pgp 0.19.0`, `prost 0.14.4` (vendor_product Cargo.lock 과 동일 버전)로 재구현
 
 ---
 
 ## 1. 타겟 아키텍처 (복제 방지 기술)
 
-DefGuard 는 "open-code" dual-license 모델: 엔터프라이즈 코드가 OSS 레포에 그대로 포함되되,
+vendor_product 는 "open-code" dual-license 모델: 엔터프라이즈 코드가 OSS 레포에 그대로 포함되되,
 `crates/defguard_core/src/enterprise/` 내 **라이선스 체크**로 락이 걸린다.
 
 ```
@@ -43,7 +43,7 @@ message LicenseKey { bytes metadata = 1; bytes signature = 2; }
 // 최종: base64(LicenseKey) → DB settings.license 에 저장
 ```
 
-**실제 Enterprise license 디코드 결과** (vendor 테스트 스위트의 real Enterprise key, `tier=2`):
+**실제 premium license 디코드 결과** (vendor 테스트 스위트의 real premium key, `tier=2`):
 ```
 customer_id = 4bb33e52-e34c-4d21-b45a-91ca3a334c09
 valid_until = 1766405682  (2025-12-22)
@@ -56,7 +56,7 @@ subscription = false
 
 ## 3. 실증 검증 (empirical proof)
 
-`/tmp/lchk` 에서 DefGuard 원본 `verify_signature()` / `from_base64()` 를 `pgp 0.19` + `prost 0.14`
+`/tmp/lchk` 에서 vendor_product 원본 `verify_signature()` / `from_base64()` 를 `pgp 0.19` + `prost 0.14`
 로 재구현하고 실행한 결과:
 
 ```
@@ -68,7 +68,7 @@ subscription = false
   decoded: customer_id=4bb33e52-… valid_until=2025-12-22 tier=2
 ### 3. FORGE enterprise metadata (protobuf encode)
   forged metadata (22 bytes): 0a0861747461636b657210011880ae99a40f30023805
-  validate_license() result: PASS (tier=Enterprise, no expiry, unlimited)
+  validate_license() result: PASS (tier=premium, no expiry, unlimited)
 ### 4. signature wall
   vendor RSA PRIVATE key present? NO (public keys.asc 만 ship)
 ### 5. degenerate signature probe
@@ -94,7 +94,7 @@ openssl dgst -sha256 -sign mine.key -out forged_meta.sig forged_meta.bin
 openssl dgst -sha256 -verify mine.pub -signature forged_meta.sig forged_meta.bin
   => Verified OK
 ```
-→ build(metadata) → sign(RSA) → verify, **전 파이프라인 작동**. DefGuard唯独 필요한 건
+→ build(metadata) → sign(RSA) → verify, **전 파이프라인 작동**. vendor_product唯独 필요한 건
 **vendor의 private key** 하나뿐.
 
 ---
@@ -103,11 +103,11 @@ openssl dgst -sha256 -verify mine.pub -signature forged_meta.sig forged_meta.bin
 
 ### S1 — vendor private key 침해 (mass forgery, 가장 심각)
 License server (`pkgs.defguard.net`) 는 모든 유효 license 의 **유일한 signer**.
-이 key 하나만 침해되면 위조 파이프라인으로 **무제한 Enterprise license 생성** (§4 증명).
+이 key 하나만 침해되면 위조 파이프라인으로 **무제한 premium license 생성** (§4 증명).
 → vendor trust anchor 이진 embed + renewal endpoint 의 server-authority 에 대한 single point of failure.
 
 ### S2 — test key / test license 노출
-vendor 는 `test_key.asc` + real Enterprise test key (`tier=2`) 를 테스트 스위트에 동봉.
+vendor 는 `test_key.asc` + real premium test key (`tier=2`) 를 테스트 스위트에 동봉.
 Signing key 가 공개/유출된 경우, **테스트 키로 서명된 license 를 `#[cfg(test)]` 빌드에서
 accept** 하는 경로가 존재 (`mod.rs` 의 `#[cfg(test)] PUBLIC_KEY = test_key.asc`).
 
@@ -135,6 +135,6 @@ request binding/authN 이 없어, 유효 key 로만 renewal 이 가능 (key 가 
 
 ## 7. 핵심 정리 (1 line)
 
-**DefGuard 엔터프라이즈 enforcing 은 단일 RSA-2048 서명과 순수 로컬 로직에만 의존**하며,
+**vendor_product 엔터프라이즈 enforcing 은 단일 RSA-2048 서명과 순수 로컬 로직에만 의존**하며,
 trust anchor(public key)와 renewal signer(vendor key)가 single point of failure.
 위조 metadata 파이프라인은 실증 통과 — 오직 vendor private keyだけが 관문.

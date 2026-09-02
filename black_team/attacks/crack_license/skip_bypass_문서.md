@@ -10,7 +10,7 @@
 통과시킬 수 있다. Deepteam 원리에서 `input_bypass` (입력 위조) 와 `logic_bypass`
 (조건 우회) 에 해당.
 
-DefGuard (`license.rs`) 검증 체인:
+vendor_product (`license.rs`) 검증 체인:
 
 ```
 from_base64()
@@ -31,7 +31,7 @@ validate_license(license, counts, tier)
 | **S4** | `get_cached_license()` 에서 `None` 대신 가짜 license 주입 | license null-check 우회 | ★★☆ |
 | **S5** | tier gate `is_enterprise_license_active()` 초기값 `true` | 기능 락 기본 open | ★☆☆ |
 
-## 3. DefGuard 대상 구체적 우회 지점 (`license.rs` / `limits.rs`)
+## 3. vendor_product 대상 구체적 우회 지점 (`license.rs` / `limits.rs`)
 
 - **S1** — `validate_license()` (license.rs:483) 의 `Ok(())` 반환 강제.
 - **S2** — `is_over_license_limits()` (`limits.rs:115`, `limits=None → false`) 는
@@ -45,7 +45,7 @@ validate_license(license, counts, tier)
 ## 4. PoC 실행 (own-lab)
 
 ```bash
-# DefGuard 원본 verify_signature() 를 재구현한 이진 (pgp 0.19 / prost 0.14)
+# vendor_product 원본 verify_signature() 를 재구현한 이진 (pgp 0.19 / prost 0.14)
 /tmp/lchk/target/debug/lchk        # verify_signature degenerate probe
 # → empty/zero signature 모두 InvalidSignature rejection (자체 뚫림 없음)
 
@@ -62,7 +62,7 @@ python education/black_team/black_runner.py <own_target> --i-own-this
   all-zero (24B)           => InvalidSignature parse: unknown packet header version 0
   all-zero (256B)          => InvalidSignature parse: unknown packet header version 0
 ```
-→ DefGuard 는 `pgp` parser 단계에서 malformed signature 를 rejection 한다. **자바로
+→ vendor_product 는 `pgp` parser 단계에서 malformed signature 를 rejection 한다. **자바로
 뚫림 없음** → 우회하려면 반드시 **코드 패치(S1–S3)** 가 필요하다.
 
 ## 6. 🔵 BLUE — 탐지/완화
@@ -77,6 +77,6 @@ python education/black_team/black_runner.py <own_target> --i-own-this
 
 ## 7. 핵심 정리 (1 line)
 
-**DefGuard 검증은 `validate_license` 의 로컬 조건 3개 + `verify_signature` 1개에만
+**vendor_product 검증은 `validate_license` 의 로컬 조건 3개 + `verify_signature` 1개에만
 의존**하며, 이 중 `verify_signature` 만이 유일한 장벽 — degenerate signature 는
 `pgp` parser 단계에서 rejection 되므로 우회에는 코드 패치(S1–S3)가 반드시 필요하다.
