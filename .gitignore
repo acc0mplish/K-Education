@@ -57,3 +57,16 @@ education/reports/engagements/
 # misc
 *.log
 .DS_Store
+
+# 2026-09-02: black_team license 분석 산출물(분석 결과물)만 비추적
+education/black_team/attacks/crack_license/FINDINGS.txt
+education/black_team/attacks/crack_license/rsa.key
+education/black_team/attacks/crack_license/license-crypto-analysis.md
+
+# 2026-09-02: team 폴더로 원위화 — 산출물(결과물)은 비추적, 도구는 추적
+black_team/attacks/crack_license/FINDINGS.txt
+black_team/attacks/crack_license/rsa.key
+black_team/attacks/crack_license/license-crypto-analysis.md
+black_team/ghidra/program/
+black_team/ghidra/app/
+black_team/ghidra/*.DS_Store

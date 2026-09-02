@@ -5,20 +5,20 @@
 Team outputs live at the repo root under three folders (see `CLAUDE.md` for placement rules):
 
 - `black_team/` — offensive/crack research. `attacks/<type>/` (PoC), `ghidra/scripts/` (Ghidra/analysis tools), `targets/` (binary samples), `evidence/` (findings).
-- `red_team/` — red-team attack simulation (payloads, subscription mock, `run_redteam.py`).
+- `red_team/` — red-team attack simulation (payloads, subscription mock, `red_team/redteam/run_redteam.py`).
 - `blue_team/` — blue-team defense/validation analysis.
 - `docs/` — project-wide reports and source designs.
-- `education/` — learning/annotation side-material (mostly gitignored).
+- `education/` — legacy learning/annotation side-material (mostly gitignored). Its old subdirs (`attacks/`, `labs/`, `reports/`, `redteam/`) are **superseded** by the root team folders above; place new content in the team folder, not in `education/`.
 - `KLIC-Aditus/` is a Bun + Rust workspace: `apps/desktop/` is React/Tauri, `packages/` holds shared TypeScript packages, `crates/` holds Rust libraries, and `server/` is the Rust backend.
 - Treat `_work/`, `target/`, `dist/`, and `node_modules/` as generated or extracted artifacts.
 
-**Rule:** never scatter new outputs. Place them under the team folder above per `CLAUDE.md`.
+**Rule (산출물 배정, never scatter):** every output must land in exactly one team folder per the 배정표 in `CLAUDE.md` — attack/PoC → `black_team/attacks/`, crypto analysis → `black_team/attacks/crack_license/`, Ghidra tools → `black_team/ghidra/scripts/`, red-team sim → `red_team/`, defense/validation → `blue_team/`, reports → `docs/`. Never scatter a single finding across multiple folders.
 
 ## Build, Test, and Development Commands
 
 From the repository root:
 
-- `python3 redteam/run_redteam.py <target> --i-own-this` runs registered PoCs against an owned/lab target and writes `evidence/<target>/red_findings.json`.
+- `python3 red_team/redteam/run_redteam.py <target> --i-own-this` runs registered PoCs against an owned/lab target and writes `evidence/<target>/red_findings.json`.
 
 From `KLIC-Aditus/`:
 
