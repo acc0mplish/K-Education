@@ -1,0 +1,109 @@
+'use strict';
+
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const fs = require('node:fs');
+const os = require('node:os');
+const path = require('node:path');
+const {
+    DEFAULT_AUTOMATION_SETTINGS,
+    normalizeAutomationSettings,
+    computeNextRunPreview,
+    computeQueueRunProjections,
+    createAutomationSettingsRepository
+} = require('./automation-settings');
+
+test('automation settings default to disabled and keep only execution policy fields', () => {
+    assert.deepEqual(normalizeAutomationSettings({}), DEFAULT_AUTOMATION_SETTINGS);
+    assert.equal(Object.hasOwn(DEFAULT_AUTOMATION_SETTINGS, 'platforms'), false);
+    assert.equal(Object.hasOwn(DEFAULT_AUTOMATION_SETTINGS, 'post_status'), false);
+});
+
+test('automation settings reject unsafe intervals and malformed time windows', () => {
+    assert.throws(
+        () => normalizeAutomationSettings({ interval_minutes: 1 }, { strict: true }),
+        error => error.code === 'CONTINUOUS_AUTOMATION_INTERVAL_INVALID'
+    );
+    assert.throws(
+        () => normalizeAutomationSettings({ interval_minutes: 361 }, { strict: true }),
+        error => error.code === 'CONTINUOUS_AUTOMATION_INTERVAL_INVALID'
+    );
+    assert.throws(
+        () => normalizeAutomationSettings({ interval_minutes: 10.5 }, { strict: true }),
+        error => error.code === 'CONTINUOUS_AUTOMATION_INTERVAL_INVALID'
+    );
+    assert.throws(
+        () => normalizeAutomationSettings({ allowed_start_time: '25:00' }, { strict: true }),
+        error => error.code === 'CONTINUOUS_AUTOMATION_TIME_INVALID'
+    );
+});
+
+test('automation settings accept every whole minute from 10 through 360', () => {
+    for (const interval of [10, 11, 16, 25, 359, 360]) {
+        assert.equal(
+            normalizeAutomationSettings({ interval_minutes: interval }, { strict: true }).interval_minutes,
+            interval
+        );
+    }
+});
+
+test('next run preview respects ordinary and overnight allowed windows', () => {
+    const evening = new Date(2026, 7, 30, 20, 0, 0, 0);
+    assert.equal(
+        computeNextRunPreview({ enabled: true, interval_minutes: 60, allowed_start_time: '09:00', allowed_end_time: '18:00' }, {
+            now: evening
+        }),
+        new Date(2026, 7, 31, 9, 0, 0, 0).toISOString()
+    );
+    assert.equal(
+        computeNextRunPreview({ enabled: true, interval_minutes: 60, allowed_start_time: '22:00', allowed_end_time: '06:00' }, {
+            now: evening
+        }),
+        new Date(2026, 7, 30, 22, 0, 0, 0).toISOString()
+    );
+});
+
+test('queue run projections preserve order and move across the allowed window', () => {
+    const projections = computeQueueRunProjections({
+        enabled: true,
+        interval_minutes: 25,
+        allowed_start_time: '09:00',
+        allowed_end_time: '18:00'
+    }, {
+        firstRunAt: new Date(2026, 7, 30, 17, 50, 0, 0).toISOString(),
+        count: 3
+    });
+
+    assert.deepEqual(projections, [
+        new Date(2026, 7, 30, 17, 50, 0, 0, 0).toISOString(),
+        new Date(2026, 7, 31, 9, 0, 0, 0).toISOString(),
+        new Date(2026, 7, 31, 9, 25, 0, 0).toISOString()
+    ]);
+});
+
+test('queue run projections require an authoritative first run time', () => {
+    assert.deepEqual(computeQueueRunProjections(DEFAULT_AUTOMATION_SETTINGS, { count: 2 }), []);
+    assert.deepEqual(computeQueueRunProjections(DEFAULT_AUTOMATION_SETTINGS, {
+        firstRunAt: new Date(2026, 7, 30, 10, 0, 0, 0).toISOString(),
+        count: 0
+    }), []);
+});
+
+test('automation settings repository saves atomically in the device config directory', () => {
+    const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'bloggenius-continuous-settings-'));
+    const filePath = path.join(directory, 'continuous_publishing.json');
+    const repository = createAutomationSettingsRepository({ filePath });
+
+    assert.equal(repository.read().source, 'default');
+    const saved = repository.save({
+        enabled: true,
+        allowed_start_time: '08:30',
+        allowed_end_time: '21:00',
+        interval_minutes: 90,
+        notification_enabled: true
+    });
+
+    assert.equal(saved.document.enabled, true);
+    assert.equal(repository.read().document.interval_minutes, 90);
+    assert.deepEqual(fs.readdirSync(directory), ['continuous_publishing.json']);
+});

@@ -1,0 +1,127 @@
+.quick-topic-recommendations-status {
+  padding: 10px 4px 18px;
+  color: #71829a;
+  font-size: 14px;
+}
+
+.quick-topic-recommendations-progress {
+  position: relative;
+  height: 6px;
+  margin: 18px 4px 22px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #dbeafe;
+}
+
+.quick-topic-recommendations-progress span {
+  position: absolute;
+  inset: 0 auto 0 -35%;
+  width: 35%;
+  border-radius: inherit;
+  background: var(--brand-primary);
+  animation: quick-topic-progress 1.35s ease-in-out infinite;
+}
+
+@keyframes quick-topic-progress {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(385%); }
+}
+
+.quick-topic-recommendation-row {
+  display: grid;
+  grid-template-columns: minmax(0, 4fr) minmax(160px, 1fr);
+  align-items: center;
+  gap: 18px;
+  padding: 13px 4px;
+  border-top: 1px solid #dfe9f4;
+}
+
+.quick-topic-recommendation-main {
+  display: flex;
+  align-items: baseline;
+  min-width: 0;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.quick-topic-recommendation-main strong {
+  color: #142039;
+  font-size: 15px;
+}
+
+.quick-topic-recommendation-source {
+  color: #0797d5;
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.quick-topic-recommendation-keywords {
+  color: #7a8ba2;
+  font-size: 12px;
+}
+
+.quick-topic-recommendation-reason-toggle,
+.quick-topic-recommendation-dismiss {
+  appearance: none;
+  border: 0;
+  background: transparent;
+  color: #63758d;
+  cursor: pointer;
+}
+
+.quick-topic-recommendation-reason-toggle {
+  padding: 0;
+  font-size: 12px;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.quick-topic-recommendation-reason {
+  flex-basis: 100%;
+  margin: 0;
+  padding: 2px 0 0 96px;
+  color: #5d6e84;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.quick-topic-recommendation-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 5px;
+}
+
+.quick-topic-recommendation-actions button.primary {
+  min-height: 36px;
+  padding: 7px 12px;
+  white-space: nowrap;
+  font-size: 13px;
+}
+
+.quick-topic-recommendation-dismiss {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  font-size: 18px;
+}
+
+.quick-topic-recommendation-dismiss:hover {
+  background: #e9f0f7;
+}
+
+@media (max-width: 900px) {
+  .quick-topic-recommendation-row {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .quick-topic-recommendation-actions {
+    justify-content: flex-end;
+  }
+
+  .quick-topic-recommendation-reason {
+    padding-left: 0;
+  }
+}

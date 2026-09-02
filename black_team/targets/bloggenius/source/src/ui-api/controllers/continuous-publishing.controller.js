@@ -1,0 +1,116 @@
+const { createControllerErrorResponder, sendMethodNotAllowed } = require('./controller-common');
+
+function createContinuousPublishingController(deps = {}) {
+    const { service, sendSuccess, sendError } = deps;
+    const toErrorResponse = createControllerErrorResponder(sendError, { defaultStatus: 400 });
+
+    return {
+        async automationSettings({ requestId, method, requestBody, res }) {
+            try {
+                if (method === 'GET') {
+                    return sendSuccess(res, requestId, service.getAutomationSettings());
+                }
+                if (method === 'POST') {
+                    return sendSuccess(res, requestId, service.saveAutomationSettings(requestBody || {}));
+                }
+                return sendMethodNotAllowed(sendError, res, requestId);
+            } catch (error) {
+                return toErrorResponse(res, requestId, 'CONTINUOUS_AUTOMATION_SETTINGS_FAILED', '연속 발행 설정을 저장하지 못했습니다.', error);
+            }
+        },
+
+        async automationTest({ requestId, method, res }) {
+            if (method !== 'POST') return sendMethodNotAllowed(sendError, res, requestId);
+            try {
+                return sendSuccess(res, requestId, service.scheduleAutomationTest());
+            } catch (error) {
+                return toErrorResponse(res, requestId, 'CONTINUOUS_AUTOMATION_TEST_FAILED', '시험 자동 실행을 예약하지 못했습니다.', error);
+            }
+        },
+
+        async topics({ requestId, method, requestBody, res }) {
+            if (method !== 'POST') return sendMethodNotAllowed(sendError, res, requestId);
+            try {
+                return sendSuccess(res, requestId, await service.captureTopic(requestBody || {}));
+            } catch (error) {
+                return toErrorResponse(res, requestId, 'TOPIC_CAPTURE_FAILED', '글감 저장에 실패했습니다.', error);
+            }
+        },
+
+        async queue({ requestId, method, searchParams, res }) {
+            if (method !== 'GET') return sendMethodNotAllowed(sendError, res, requestId);
+            try {
+                return sendSuccess(res, requestId, await service.getReadyQueue({ searchParams }));
+            } catch (error) {
+                return toErrorResponse(res, requestId, 'CONTINUOUS_QUEUE_READ_FAILED', '발행 대기열을 불러오지 못했습니다.', error);
+            }
+        },
+
+        async updateTopic({ requestId, method, requestBody, res }) {
+            if (method !== 'POST') return sendMethodNotAllowed(sendError, res, requestId);
+            try {
+                return sendSuccess(res, requestId, await service.updateTopic(requestBody || {}));
+            } catch (error) {
+                return toErrorResponse(res, requestId, 'QUEUE_PLAN_UPDATE_FAILED', '발행 계획을 수정하지 못했습니다.', error);
+            }
+        },
+
+        async deleteSavedTopic({ requestId, method, requestBody, res }) {
+            if (method !== 'POST') return sendMethodNotAllowed(sendError, res, requestId);
+            try {
+                return sendSuccess(res, requestId, await service.deleteSavedTopic(requestBody || {}));
+            } catch (error) {
+                return toErrorResponse(res, requestId, 'SAVED_TOPIC_DELETE_FAILED', '보관한 글감을 삭제하지 못했습니다.', error);
+            }
+        },
+
+        async removeFromQueue({ requestId, method, requestBody, res }) {
+            if (method !== 'POST') return sendMethodNotAllowed(sendError, res, requestId);
+            try {
+                return sendSuccess(res, requestId, await service.removeReadyTopic(requestBody || {}));
+            } catch (error) {
+                return toErrorResponse(res, requestId, 'QUEUE_REMOVE_FAILED', '대기열에서 글감을 빼지 못했습니다.', error);
+            }
+        },
+
+        async reorderQueue({ requestId, method, requestBody, res }) {
+            if (method !== 'POST') return sendMethodNotAllowed(sendError, res, requestId);
+            try {
+                return sendSuccess(res, requestId, await service.reorderReadyTopic(requestBody || {}));
+            } catch (error) {
+                return toErrorResponse(res, requestId, 'QUEUE_REORDER_FAILED', '대기열 순서를 변경하지 못했습니다.', error);
+            }
+        },
+
+        async startRunner({ requestId, method, requestBody, res }) {
+            if (method !== 'POST') return sendMethodNotAllowed(sendError, res, requestId);
+            try {
+                return sendSuccess(res, requestId, service.startNextReadyTopic(requestBody || {}));
+            } catch (error) {
+                return toErrorResponse(res, requestId, 'CONTINUOUS_RUNNER_START_FAILED', '다음 글감 실행을 시작하지 못했습니다.', error);
+            }
+        },
+
+        async runnerStatus({ requestId, method, res }) {
+            if (method !== 'GET') return sendMethodNotAllowed(sendError, res, requestId);
+            try {
+                return sendSuccess(res, requestId, service.getRunnerStatus());
+            } catch (error) {
+                return toErrorResponse(res, requestId, 'CONTINUOUS_RUNNER_STATUS_FAILED', '연속 발행 상태를 불러오지 못했습니다.', error);
+            }
+        },
+
+        async statusSummary({ requestId, method, res }) {
+            if (method !== 'GET') return sendMethodNotAllowed(sendError, res, requestId);
+            try {
+                return sendSuccess(res, requestId, await service.getGlobalStatusSummary());
+            } catch (error) {
+                return toErrorResponse(res, requestId, 'CONTINUOUS_STATUS_SUMMARY_FAILED', '연속 발행 요약 상태를 불러오지 못했습니다.', error);
+            }
+        }
+    };
+}
+
+module.exports = {
+    createContinuousPublishingController
+};

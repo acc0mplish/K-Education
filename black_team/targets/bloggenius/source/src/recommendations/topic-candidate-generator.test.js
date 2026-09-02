@@ -1,0 +1,220 @@
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const { createTopicCandidateGenerator } = require('./topic-candidate-generator');
+
+function profile() {
+    return {
+        owner_user_id: 'local:test',
+        interests: {
+            keywords: [
+                { value: 'AI', normalized_value: 'ai', evidence_count: 4, last_used_at: '2026-08-14', evidence: { kind: 'topic_facet', id: 'f1' } },
+                { value: '워드프레스', normalized_value: '워드프레스', evidence_count: 2, last_used_at: '2026-08-10', evidence: { kind: 'topic_facet', id: 'f2' } }
+            ],
+            categories: [{ value: 'IT', normalized_value: 'it', evidence_count: 3, evidence: { kind: 'topic_facet', id: 'c1' } }],
+            platforms: []
+        }
+    };
+}
+
+test('combines request, trend, and owner profile evidence without scoring', () => {
+    const result = createTopicCandidateGenerator().generate({
+        query: '블로그 자동화',
+        ownerProfile: profile(),
+        knowledge: [{
+            provider_id: 'naver-trends',
+            kind: 'trends',
+            transport: 'builtin_api',
+            items: [{
+                title: 'AI 블로그 도구',
+                timestamp: '2026-08-14T00:00:00+09:00',
+                metadata: { source: 'naver_trend', categories: ['IT'], trend_date: '2026-08-14', change_type: 'up', change_amount: 7, display_order: 1 }
+            }]
+        }]
+    });
+
+    assert.deepEqual(result.candidates.map((item) => item.candidate_type), [
+        'request_seed', 'trend_seed', 'profile_seed', 'profile_seed'
+    ]);
+    const trend = result.candidates[1];
+    assert.equal(trend.owner_matches.keywords[0].normalized_value, 'ai');
+    assert.equal(trend.owner_matches.categories[0].normalized_value, 'it');
+    assert.equal(trend.source_refs[0].provider_id, 'naver-trends');
+    assert.equal(Object.hasOwn(trend, 'score'), false);
+});
+
+test('keeps the existing topic lane compatible with canonical Trends items', () => {
+    const result = createTopicCandidateGenerator().generate({
+        ownerProfile: profile(),
+        knowledge: [{
+            schema_version: 1,
+            snapshot_id: 'ks_trends_fixture',
+            provider_id: 'naver-trends',
+            kind: 'trends',
+            transport: 'builtin_api',
+            freshness: 'fresh',
+            observed_at: '2026-08-24T00:00:00.000Z',
+            expires_at: '2026-08-24T00:15:00.000Z',
+            items: [{
+                id: 'trend-1', title: 'AI 에이전트', summary: '상승', observed_at: '2026-08-23T15:00:00.000Z',
+                url: '', source: 'naver-trend-posting', publisher: '', keyword: 'AI 에이전트', categories: ['IT'],
+                change_type: 'up', change_amount: 4, score: 4, display_order: 1
+            }]
+        }]
+    });
+
+    const trend = result.candidates.find((item) => item.candidate_type === 'trend_seed');
+    assert.equal(trend.topic_seed, 'AI 에이전트');
+    assert.equal(trend.trend.change_type, 'up');
+    assert.deepEqual(trend.trend.categories, ['IT']);
+    assert.equal(trend.source_refs[0].source, 'naver-trend-posting');
+});
+
+test('excludes exact recent seeds and keeps stable candidate ids', () => {
+    const generator = createTopicCandidateGenerator();
+    const input = {
+        ownerProfile: profile(),
+        recentArtifacts: [{ title: 'AI' }]
+    };
+    const first = generator.generate(input);
+    const second = generator.generate(input);
+
+    assert.equal(first.excluded_recent_count, 1);
+    assert.equal(first.candidates.some((item) => item.topic_seed === 'AI' && item.candidate_type !== 'activity_seed'), false);
+    assert.deepEqual(first.candidates.map((item) => item.id), second.candidates.map((item) => item.id));
+});
+
+test('does not promote generated recommendation artifacts into activity candidates', () => {
+    const result = createTopicCandidateGenerator().generate({
+        ownerProfile: profile(),
+        recentArtifacts: [{ id: 'artifact-1', title: '최근 작성한 글감', artifact_type: 'content_idea' }]
+    });
+
+    const activity = result.candidates.find((item) => item.candidate_type === 'activity_seed');
+    assert.equal(activity, undefined);
+});
+
+test('adds recent writing activity as an explicit candidate source', () => {
+    const result = createTopicCandidateGenerator().generate({
+        ownerProfile: {
+            ...profile(),
+            activity: {
+                recent_subjects: [{ subject: '최근 작성한 여행 정리', domain: 'blog', stage: 'published' }]
+            }
+        }
+    });
+
+    const activity = result.candidates.find((item) => item.candidate_type === 'activity_seed');
+    assert.equal(activity.topic_seed, '최근 작성한 여행 정리');
+    assert.equal(activity.source_refs[0].kind, 'activity');
+});
+
+test('does not use generated activity signals but keeps selected writing activity', () => {
+    const result = createTopicCandidateGenerator().generate({
+        ownerProfile: {
+            ...profile(),
+            activity: {
+                recent_subjects: [
+                    { subject: '단순 추천 결과', domain: 'blog', stage: 'generated' },
+                    { subject: '거절한 추천 결과', domain: 'blog', stage: 'feedback' },
+                    { subject: '사용자가 선택한 글감', domain: 'blog', stage: 'selected' }
+                ]
+            }
+        }
+    });
+
+    assert.equal(result.candidates.some((item) => item.topic_seed === '단순 추천 결과'), false);
+    assert.equal(result.candidates.some((item) => item.topic_seed === '거절한 추천 결과'), false);
+    assert.equal(result.candidates.some((item) => item.topic_seed === '사용자가 선택한 글감'), true);
+});
+
+test('carries the original saved-topic context so ambiguous keywords keep their meaning', () => {
+    const result = createTopicCandidateGenerator().generate({
+        ownerProfile: {
+            owner_user_id: 'local:test',
+            interests: {
+                keywords: [{
+                    value: '오디세이', normalized_value: '오디세이', evidence_count: 1,
+                    evidence: { kind: 'topic_facet', id: 'facet-odyssey' },
+                    contexts: [{
+                        subject: '판교 CGV에서 영화 오디세이 관람 후기',
+                        category: '생활', source: 'manual',
+                        instruction: '그리스 로마신화 영화의 감상을 정리한다.'
+                    }]
+                }],
+                categories: [], platforms: []
+            }
+        }
+    });
+
+    const candidate = result.candidates.find((item) => item.candidate_type === 'profile_seed');
+    assert.match(candidate.semantic_context, /영화 오디세이/);
+    assert.match(candidate.semantic_context, /그리스 로마신화/);
+    assert.equal(candidate.source_refs[0].kind, 'topic_facet');
+    assert.equal(candidate.source_refs[0].subject, '판교 CGV에서 영화 오디세이 관람 후기');
+});
+
+test('does not promote automatically observed trends into owner interests', () => {
+    const result = createTopicCandidateGenerator().generate({
+        ownerProfile: {
+            owner_user_id: 'local:test',
+            interests: {
+                keywords: [{
+                    value: '자동 수집 키워드', normalized_value: '자동 수집 키워드', evidence_count: 1,
+                    evidence: { kind: 'topic_facet', id: 'facet-auto' },
+                    contexts: [{ subject: '자동 트렌드', source: 'auto-trends' }]
+                }],
+                categories: [], platforms: []
+            }
+        }
+    });
+
+    assert.equal(result.candidates.some((item) => item.topic_seed === '자동 수집 키워드'), false);
+});
+
+test('excludes candidate ids that were recommended in previous runs', () => {
+    const generator = createTopicCandidateGenerator();
+    const initial = generator.generate({
+        ownerProfile: profile(),
+        knowledge: [{
+            provider_id: 'naver-trends',
+            kind: 'trends',
+            items: [{ title: 'AI 블로그 도구' }]
+        }]
+    });
+    const previousId = initial.candidates.find((item) => item.topic_seed === 'AI 블로그 도구').id;
+    const result = generator.generate({
+        ownerProfile: profile(),
+        excludedCandidateIds: [previousId],
+        knowledge: [{
+            provider_id: 'naver-trends',
+            kind: 'trends',
+            items: [{ title: 'AI 블로그 도구' }]
+        }]
+    });
+
+    assert.equal(result.candidates.some((item) => item.id === previousId), false);
+    assert.equal(result.excluded_previous_count, 1);
+});
+
+test('uses a topic hint to prioritize matching graph-derived profile and activity signals', () => {
+    const result = createTopicCandidateGenerator().generate({
+        query: '워드프레스',
+        ownerProfile: {
+            ...profile(),
+            activity: {
+                recent_subjects: [
+                    { subject: '워드프레스 블로그 운영 기록', domain: 'blog', stage: 'published' },
+                    { subject: '주말 오사카 여행 계획', domain: 'blog', stage: 'published' }
+                ]
+            }
+        }
+    });
+
+    assert.equal(result.focus.matched_profile_keyword_count, 1);
+    assert.equal(result.focus.matched_activity_count, 1);
+    assert.equal(result.candidates.some((item) => item.candidate_type === 'request_seed' && item.topic_seed === '워드프레스'), true);
+    const request = result.candidates.find((item) => item.candidate_type === 'request_seed');
+    assert.equal(request.owner_matches.keywords[0].value, '워드프레스');
+    assert.equal(result.candidates.some((item) => item.candidate_type === 'activity_seed' && item.topic_seed === '워드프레스 블로그 운영 기록'), true);
+    assert.equal(result.candidates.some((item) => item.topic_seed === '주말 오사카 여행 계획'), false);
+});

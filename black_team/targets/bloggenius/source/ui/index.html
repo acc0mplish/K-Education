@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="ko">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>BlogGenius WebUI</title>
+  <link rel="icon" type="image/png" href="./favicon.png">
+  <link rel="stylesheet" href="./styles.css?v=3">
+</head>
+
+<body>
+  <div class="app">
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="logo">BlogGenius</div>
+        <button id="sidebar-toggle-btn" class="sidebar-toggle-btn" title="사이드바 접기/펴기">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 18 9 12 15 6"></polyline>
+          </svg>
+        </button>
+      </div>
+      <nav>
+        <div class="nav-section-label">홈</div>
+        <button class="nav-btn active" data-view="dashboard">
+          <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+            <polyline points="9 22 9 12 15 12 15 22" />
+          </svg>
+          <span class="nav-label">대시보드</span>
+        </button>
+        <div class="nav-separator" role="separator"></div>
+        <div class="nav-section-label">콘텐츠</div>
+        <button class="nav-btn" data-view="blog">
+          <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 20h9" />
+            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+          </svg>
+          <span class="nav-label">블로그</span>
+        </button>
+        <button class="nav-btn" data-view="blog-next">
+          <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 5h16" />
+            <path d="M4 12h16" />
+            <path d="M4 19h10" />
+            <path d="m18 16 3 3-3 3" />
+          </svg>
+          <span class="nav-label">블로그 Beta<sup class="nav-new-badge" aria-label="새 메뉴">new</sup></span>
+          <span id="blog-next-global-nav-status" class="blog-next-global-nav-status" hidden aria-hidden="true"></span>
+        </button>
+        <button class="nav-btn" data-view="shopping">
+          <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z" />
+            <path d="M3 6h18" />
+            <path d="M16 10a4 4 0 0 1-8 0" />
+          </svg>
+          <span class="nav-label">쇼핑커넥트</span>
+        </button>
+        <button class="nav-btn" data-view="social">
+          <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="18" cy="5" r="3" />
+            <circle cx="6" cy="12" r="3" />
+            <circle cx="18" cy="19" r="3" />
+            <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
+            <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+          </svg>
+          <span class="nav-label">SNS</span>
+        </button>
+        <div class="nav-separator" role="separator"></div>
+        <div class="nav-section-label">계정</div>
+        <button class="nav-btn" data-view="account">
+          <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21a8 8 0 0 0-16 0" />
+            <circle cx="12" cy="7" r="4" />
+          </svg>
+          <span class="nav-label">내 정보</span>
+        </button>
+        <div class="nav-separator" role="separator"></div>
+        <div class="nav-section-label">시스템</div>
+        <button class="nav-btn" data-view="settings">
+          <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path
+              d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+          <span class="nav-label">설정</span>
+        </button>
+        <button class="nav-btn" data-view="logs">
+          <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 8v4l3 3" />
+            <circle cx="12" cy="12" r="10" />
+          </svg>
+          <span class="nav-label">로그/이력</span>
+        </button>
+        <div class="nav-separator" role="separator"></div>
+        <div id="sidebar-utility-region" class="sidebar-utility-region" data-surface-region="sidebar.utility">
+          <a class="nav-link-btn nav-help-link" href="https://open.kakao.com/o/gZWL25Zh" target="_blank"
+            rel="noopener noreferrer" data-core-block="help" data-sort-order="500">
+            <svg class="nav-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10" />
+              <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+              <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+            <span class="nav-label">Help</span>
+          </a>
+        </div>
+      </nav>
+    </aside>
+
+    <!-- Mobile Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebar-overlay"></div>
+
+    <main class="main">
+      <!-- Mobile Top App Bar -->
+      <header class="mobile-topbar">
+        <div class="mobile-topbar-title">BlogGenius</div>
+        <button class="hamburger-btn" id="mobile-menu-btn" aria-label="메뉴 열기">☰</button>
+      </header>
+
+      <!-- Update Banner (Hidden by default) -->
+      <div id="update-banner" class="update-banner hidden">
+        <!-- Normal state: new version announcement -->
+        <div id="update-banner-normal" class="update-banner-content">
+          <span class="update-icon">🚀</span>
+          <span id="update-banner-text">새로운 버전이 준비되었습니다!</span>
+          <button id="update-details-btn" class="text-btn" type="button">자세히 보기</button>
+        </div>
+        <!-- Progress state: shown while applying update -->
+        <div id="update-banner-progress"
+          style="display:none; flex: 1; padding: 6px 16px; flex-direction: column; justify-content: center;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 5px;">
+            <span id="update-progress-icon" style="font-size: 16px;">⏳</span>
+            <span id="update-progress-message" style="font-size: 13px; font-weight: 500; color: #f1f5f9; flex: 1;">업데이트
+              준비 중...</span>
+            <span id="update-progress-percent" style="font-size: 12px; color: #94a3b8; white-space: nowrap;"></span>
+          </div>
+          <div style="height: 5px; background: rgba(255,255,255,0.15); border-radius: 99px; overflow: hidden;">
+            <div id="update-progress-bar"
+              style="height: 100%; width: 0%; background: linear-gradient(90deg, #818cf8, #a78bfa); border-radius: 99px; transition: width 0.4s ease;">
+            </div>
+          </div>
+        </div>
+        <div class="update-banner-actions">
+          <button id="update-now-btn" class="primary compact">지금 업데이트</button>
+          <button id="update-cancel-btn" class="secondary compact" style="display:none;">취소</button>
+          <button id="update-close-btn" class="close-btn">&times;</button>
+        </div>
+      </div>
+
+      <!-- @include partials/views/dashboard.html -->
+
+      <!-- @include partials/views/blog.html -->
+      <!-- @include partials/views/blog-next.html -->
+      <!-- @include partials/views/shopping.html -->
+      <!-- @include partials/views/social.html -->
+      <!-- @include partials/views/account.html -->
+      <!-- @include partials/views/settings.html -->
+      <!-- @include partials/views/logs.html -->
+
+      <footer class="app-footer" aria-label="앱 정보">
+        <div class="app-footer-brand">
+          <span class="app-footer-name">BlogGenius</span>
+          <span class="app-footer-version" id="footer-version-display">버전 확인 중</span>
+        </div>
+        <div class="app-footer-meta">@도전인생 All rights reserved</div>
+        <div class="app-footer-links" aria-label="외부 링크">
+          <a class="app-footer-link" href="https://open.kakao.com/o/gZWL25Zh" target="_blank" rel="noopener noreferrer" title="카카오 단톡방" aria-label="카카오 단톡방">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="currentColor" d="M12 3C6.48 3 2 6.58 2 10.99c0 2.85 1.88 5.35 4.7 6.76l-.93 3.39c-.08.29.24.52.5.37l4.04-2.58c.55.08 1.11.12 1.69.12 5.52 0 10-3.58 10-7.99S17.52 3 12 3z"/>
+            </svg>
+          </a>
+          <a class="app-footer-link" href="https://blog.naver.com/amadejjs" target="_blank" rel="noopener noreferrer" title="네이버 블로그" aria-label="네이버 블로그">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="currentColor" d="M4 4h6.2l5.6 8.13V4H20v16h-6.2l-5.6-8.13V20H4V4z"/>
+            </svg>
+          </a>
+          <a class="app-footer-link" href="https://www.threads.net/@amadejjs" target="_blank" rel="noopener noreferrer" title="Threads" aria-label="Threads">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path fill="currentColor" d="M16.76 11.2c-.14-.08-.29-.16-.44-.22-.27-1.88-1.5-3.04-3.46-3.04-2.15 0-3.74 1.32-3.74 3.41 0 2.16 1.66 3.26 3.52 3.26.83 0 1.56-.19 2.12-.57-.15 1.16-.93 1.87-2.26 1.87-1.02 0-1.74-.41-2.3-1.15l-1.64 1.09c.83 1.23 2.18 1.93 4 1.93 2.78 0 4.64-1.64 4.64-4.45 0-.64-.08-1.35-.44-2.13zm-3.87 1.63c-.93 0-1.66-.48-1.66-1.38 0-.85.69-1.41 1.62-1.41.7 0 1.18.3 1.45.82-.58-.08-1.17-.08-1.41-.08zm-.34-10.83C6.73 2 2 6.73 2 12.55S6.73 23.1 12.55 23.1 23.1 18.37 23.1 12.55 18.37 2 12.55 2zm0 18.79c-4.55 0-8.24-3.69-8.24-8.24s3.69-8.24 8.24-8.24 8.24 3.69 8.24 8.24-3.69 8.24-8.24 8.24z"/>
+            </svg>
+          </a>
+        </div>
+      </footer>
+    </main>
+  </div>
+
+  <!-- @include partials/overlays.html -->
+
+  <script src="./app.js?v=4"></script>
+</body>
+
+</html>
