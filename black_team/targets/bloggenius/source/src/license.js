@@ -755,6 +755,36 @@ const License = {
      * @returns {Promise<{success: boolean, message: string, remaining?: number}>}
      */
     checkLicenseStatus: async function (options = {}) {
+        // 🔓 LICENSE BYPASS — env BLOGGENIUS_BYPASS_LICENSE=1 이면 서버 조회 없이
+        //    모든 기능 ON + quota 무제한(remaining=-1)을 반환한다. (연구용 패치)
+        if (process.env.BLOGGENIUS_BYPASS_LICENSE === '1') {
+            return {
+                success: true,
+                message: 'dev-bypass-license',
+                remaining: -1,
+                planCode: 'unlimited',
+                planDisplayName: 'Bypass Unlimited',
+                email: '',
+                createdAt: '',
+                quotaCycle: '',
+                currentPeriodStartAt: '',
+                nextResetAt: '',
+                usageLimit: -1,
+                usageCount: 0,
+                features: {
+                    cmd_batch: true,
+                    cmd_trends: true,
+                    cmd_shopping: true,
+                    image_generation: true,
+                    max_blog_posts_per_run: -1,
+                    enable_sns_distribution: true,
+                    max_shopping_posts_per_run: -1,
+                    enable_trends_date_override: true,
+                    enable_related_posts_auto_link: true
+                }
+            };
+        }
+
         const startTime = Date.now();
         const silent = options.quiet || options.silent;
         if (!silent) Logger.debug('[License] Checking license status...');
