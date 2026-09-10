@@ -1,4 +1,3 @@
-===== FILE: registry/examples/file-upload-demo.tsx | deps:  =====
 "use client"
 
 import * as React from "react"
@@ -114,4 +113,3 @@ export default function FileUploadDemo() {
     </div>
   )
 }
-

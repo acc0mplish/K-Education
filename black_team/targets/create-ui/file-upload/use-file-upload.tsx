@@ -1,4 +1,3 @@
-FILE: registry/hooks/use-file-upload.ts | deps: 
 "use client"
 
 import * as React from "react"
@@ -382,4 +381,3 @@ export type {
   UseFileUploadOptions,
   FileUploadStatus,
 }
-
