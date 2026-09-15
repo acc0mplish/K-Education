@@ -1,0 +1,33 @@
+{
+  "project": "edwardkim/rhwp",
+  "version": "0.8.4",
+  "sourceCommit": "496333b27d21ddb9114ba9ae340bcb895870c9a7",
+  "sourceUrl": "https://github.com/edwardkim/rhwp",
+  "license": "MIT",
+  "snapshotDate": "2026-08-27",
+  "renderer": "canvas2d",
+  "wasm": "assets/rhwp_bg-E7AbOtYf.wasm",
+  "integrity": {
+    "LICENSE": "1c3a7d5643b163a3ead4965e1bea33b832caee5bfca265efe42afcd7bc696b5b",
+    "assets/index-BQpB1W0O.js": "ff9c60437aa88a143208ba9b9a5ae364aac4a3d3abf8be1d6fecc01875724374",
+    "assets/index-BZuFhS-Y.css": "1ddaaecd83179520714820cebe7569931717fcb8bb2935fb294d72b4060615d3",
+    "assets/rhwp_bg-E7AbOtYf.wasm": "2f5b1fc0811e445ca92595dac95c74eec686c7a5bd212573ceeefa43052093cb",
+    "favicon.ico": "136d51c3d0a12bc67352964998fa78a5dcf2702873f73eb261990f9e20eb0ade",
+    "fonts/D2Coding-Regular.woff2": "358df12fdf9b65d0fd31554a826f97af4eeefd96a047297a28a856315fe872c1",
+    "fonts/LatinModernMath-Regular.woff2": "1177d9025d1e797c54b3c7676976365abd90f903423091de7f0f4e7a4b372162",
+    "fonts/NotoSansKR-Bold.woff2": "dab3d492daa687386292cff1499225db580f931f800ee0d124eb0636378c6020",
+    "fonts/NotoSansKR-Regular.woff2": "d1bf8649914a4fe9477a8735bf056383e44e466141fb3d61897252e06d900c1a",
+    "fonts/NotoSerifKR-Regular.woff2": "c9a1e3ac69994d680883b53b1fd83d520733b704792522a932bfaa276117de45",
+    "fonts/SourceHanSerifK-OldHangul-subset.woff2": "9e419cd16df2ea3b220aa7751320d956ac2493440ba412484d98325078f09d43",
+    "icons/icon-128.png": "ce3047204dedd260b62b507ef1773ecfa1e68be1ddf08304a664fcb1341d502d",
+    "icons/icon-192.png": "1180863b994272a7591043ecf0ae539de78c0f404eecad15b4e67b0315cbaf9c",
+    "icons/icon-256.png": "b851d2271495a9858efd51def7615f68f2204417977672cde1da1ced53120ad0",
+    "icons/icon-512.png": "25074cfb4bc9e9c543fd56504e4088741e4fe2b4927f36ab90741efa7947887a",
+    "images/icon_small_ko.svg": "a0ac1200a41b6a75e9afb30cda5bb850276087d45c2f25870605888238ba9b39",
+    "images/icon_small_ko_dark.svg": "9d02ea0b8c1d399a89290d97613759826f19f3e3f392b6d79dcf6109e7e15fa6",
+    "index.html": "16b7ca769a50dba4f3d3763f650728d61fb8e15b23d08202657265ebf8ad6e2f",
+    "print.html": "930907863afbafcc76099d386f6a995bc6c69387cb56838b18e4cdaf6eea6b79",
+    "theme-init.js": "f10bca1d00ef2bdd49b75e4d16741452d8c9cdebfa561e1418437e9a78f91c1c"
+  },
+  "notes": "Pinned offline Studio snapshot (upstream tag v0.8.4) with complete file integrity; CanvasKit and sample corpus intentionally excluded. Built from source with rust 1.93.1 + RHWP_DISABLE_EXTERNAL_WEBFONTS=1."
+}

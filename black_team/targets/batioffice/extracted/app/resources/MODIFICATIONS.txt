@@ -1,0 +1,19 @@
+# BatiOffice modifications
+
+BatiOffice is a modified distribution of GenOffice. The original GenOffice
+copyright, Apache License 2.0 terms, and NOTICE attribution remain in this
+distribution.
+
+Material BatiOffice changes include:
+
+- BatiOffice product branding, application identifiers, icons, and packaging
+- selectable direct, local, and future Bati Cloud AI provider boundaries
+- operating-system protected provider credentials and desktop account sessions
+- shared AI conversation, execution evidence, privacy, and certification layers
+- HWP/HWPX support based on the separately licensed rhwp snapshot
+- Bati Workspace, workflow, telemetry, update, and enterprise integration seams
+- reliability, security, upstream synchronization, and release automation
+
+The source repository and Git history identify the exact files and revisions
+changed from the tracked GenOffice upstream. No GenOffice or Genspark trademark
+rights are granted by the Apache License 2.0.

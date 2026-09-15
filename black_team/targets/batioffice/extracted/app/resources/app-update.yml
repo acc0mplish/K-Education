@@ -1,0 +1,4 @@
+provider: generic
+url: https://updates.bati.ai/batioffice
+channel: beta
+updaterCacheDirName: '@genofficeshell-updater'

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://tauri.app/2/schemas/schema.json",
+  "identifier": "default",
+  "description": "Default capability for the bunch app.",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "fs:default",
+    "fs:allow-read-dir",
+    "fs:allow-read-file",
+    "fs:allow-stat"
+  ]
+}
