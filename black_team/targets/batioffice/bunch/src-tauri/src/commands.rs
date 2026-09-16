@@ -191,11 +191,3 @@ pub fn set_theme(theme: String) {
 pub fn get_default_save_dir() -> String {
     files::default_save_dir()
 }
-
-/// Opens a document with the host OS associated application (BatiOffice's
-/// "open in system app" behaviour, kept local).
-#[tauri::command]
-pub fn open_external(path: String) -> bool {
-    let _ = std::process::Command::new("open").arg(&path).output();
-    true
-}

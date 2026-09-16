@@ -38,7 +38,6 @@ fn main() {
             commands::get_theme,
             commands::set_theme,
             commands::get_default_save_dir,
-            commands::open_external,
             office::serve_module,
             office::files_read,
             office::office_save,
