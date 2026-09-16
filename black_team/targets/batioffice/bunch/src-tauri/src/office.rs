@@ -241,18 +241,26 @@ pub fn office_recent(_kind: Option<String>) -> Vec<String> {
 fn base64_encode(bytes: &[u8]) -> String {
     const B64: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     let mut out = String::with_capacity(bytes.len() * 2 / 3 + 4);
-    let mut chunks = bytes.chunks(3);
-    while let Some(a) = chunks.next() {
-        let b = *a.get(1).unwrap_or(&0);
-        let c = *a.get(2).unwrap_or(&0);
-        let i0 = (a[0] >> 2) as usize;
-        let i1 = (((a[0] & 0x03) << 4) | (b >> 4)) as usize;
-        let i2 = if a.len() > 1 { (((b & 0x0f) << 2) | (c >> 6)) as usize } else { 64 };
-        let i3 = if a.len() > 2 { (c & 0x3f) as usize } else { 64 };
-        out.push(B64[i0] as char);
-        out.push(if a.len() > 1 { B64[i1] as char } else { '=' });
-        out.push(if a.len() > 2 { B64[i2] as char } else { '=' });
-        out.push(B64[i3] as char);
+    for chunk in bytes.chunks(3) {
+        // Encode 3 bytes -> up to 4 base64 chars. Pad short trailing groups
+        // with '='. Indexing into B64 (len 64) must stay < 64, so guard each
+        // slot instead of the original (which could use index 64 -> panic).
+        let b0 = chunk[0] as u32;
+        let b1 = (*chunk.get(1).unwrap_or(&0)) as u32;
+        let b2 = (*chunk.get(2).unwrap_or(&0)) as u32;
+        let n = (b0 << 16) | (b1 << 8) | b2;
+        out.push(B64[((n >> 18) & 0x3f) as usize] as char);
+        out.push(B64[((n >> 12) & 0x3f) as usize] as char);
+        if chunk.len() > 1 {
+            out.push(B64[((n >> 6) & 0x3f) as usize] as char);
+        } else {
+            out.push('=');
+        }
+        if chunk.len() > 2 {
+            out.push(B64[(n & 0x3f) as usize] as char);
+        } else {
+            out.push('=');
+        }
     }
     out
 }
@@ -263,22 +271,27 @@ fn base64_decode(s: &str) -> Option<Vec<u8>> {
         let mut i = 0;
         while i < 26 {
             v[(b'A' + i) as usize] = i as i8;
-            v[(b'a' + i) as usize] = i as i8;
+            v[(b'a' + i) as usize] = 26 + i as i8;
             i += 1;
         }
         i = 0;
         while i < 10 {
-            v[(b'0' + i) as usize] = 26 + i as i8;
+            v[(b'0' + i) as usize] = 52 + i as i8;
             i += 1;
         }
+        // Non-alphanumeric base64 symbols must be mapped too, or any payload
+        // containing them (e.g. the bundled EMPTY_DOCX) decodes as None.
+        v[43 /*+*/ as usize] = 62;
+        v[47 /* / */ as usize] = 63;
         v
     };
     let mut out = Vec::with_capacity(s.len() / 2);
     let mut buf = 0u32;
     let mut bits = 0u32;
     for ch in s.bytes() {
+        // Padding ('=') ends the current group: stop consuming this group.
         if ch == b'=' || ch == b'\n' || ch == b'\r' || ch == b' ' {
-            continue;
+            break;
         }
         let v = VAL[ch as usize];
         if v < 0 {
@@ -288,7 +301,10 @@ fn base64_decode(s: &str) -> Option<Vec<u8>> {
         bits += 6;
         if bits >= 8 {
             bits -= 8;
-            out.push((buf >> bits) as u8);
+            out.push(((buf >> bits) & 0xff) as u8);
+            // Drop the emitted high bits so the next group doesn't inherit
+            // stale payload from the already-pushed byte.
+            buf &= (1 << bits) - 1;
         }
     }
     Some(out)
@@ -296,3 +312,56 @@ fn base64_decode(s: &str) -> Option<Vec<u8>> {
 
 // NOTE: the frontend resolves the per-module base via the `serve_module`
 // command (which applies `base_for`), so this map was dropped as dead code.
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// `office_open({blank:true})` must return the bundled EMPTY_DOCX docx.
+    #[test]
+    fn open_blank_returns_bundled_docx() {
+        let r = office_open(serde_json::json!({ "blank": true }));
+        let b64 = r["base64"].as_str().expect("base64 field");
+        assert!(b64.len() > 1000, "EMPTY_DOCX payload too short");
+        let decoded = base64_decode(b64).expect("decode");
+        assert_eq!(&decoded[0..4], b"PK\x03\x04", "blank docx not a real zip");
+        assert!(contains(&decoded, b"[Content_Types].xml"));
+    }
+
+    /// `office_open({path,blank:false})` must return the file's raw bytes.
+    #[test]
+    fn open_path_returns_file_bytes() {
+        let p = "/tmp/bunch_test/open_path.docx";
+        std::fs::write(p, &[0x50u8, 0x4b, 0x03, 0x04, 0x31, 0x32]).unwrap();
+        let r = office_open(serde_json::json!({ "path": p, "blank": false }));
+        assert_eq!(r["path"].as_str().unwrap(), p);
+        let decoded = base64_decode(r["base64"].as_str().unwrap()).expect("decode");
+        assert_eq!(decoded, vec![0x50u8, 0x4b, 0x03, 0x04, 0x31, 0x32]);
+    }
+
+    /// `office_save` + `files_read` round-trip a real docx.
+    #[test]
+    fn save_and_read_roundtrip() {
+        let p = "/tmp/bunch_test/rt.docx";
+        let content = b"PK\x03\x04bunch-docx-contents";
+        let b64 = base64_encode(content);
+        let r = office_save(p.to_string(), b64, Some(true));
+        assert!(r["ok"].as_bool().expect("ok"), "save ok=false");
+        let back = std::fs::read(p).expect("read back");
+        assert_eq!(back, content);
+
+        let fr = files_read(p.to_string());
+        let fr_decoded = base64_decode(fr["base64"].as_str().unwrap()).expect("decode");
+        assert_eq!(fr_decoded, content);
+        assert_eq!(fr["size"].as_u64().unwrap() as usize, content.len());
+    }
+
+
+
+    fn contains(haystack: &[u8], needle: &[u8]) -> bool {
+        haystack
+            .windows(needle.len())
+            .any(|w| w == needle)
+    }
+}
+
