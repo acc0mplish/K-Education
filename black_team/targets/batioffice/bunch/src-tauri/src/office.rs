@@ -24,15 +24,54 @@ use std::thread;
 use tiny_http::{Header, Method, Request, Response, Server};
 
 /// Parent directory of the office modules, relative to the package root
-/// (where cargo runs `src-tauri/...`).
+/// (where cargo runs `src-tauri/...`). Used as the dev-mode fallback.
 pub const MODULES_DIR: &str = "src-tauri/assets/modules";
 
+/// Resolves the on-disk location of the office module bundles, working in both
+/// dev and release:
+///   - dev  (`cargo run`): CWD is the package root, so `MODULES_DIR` resolves.
+///   - release: `bundle_resources` copies `assets/modules` into the app's
+///     Resources dir; the executable lives in `Contents/MacOS`, so the modules
+///     are at `../Resources/assets/modules`.
+/// Returns the directory that *contains* the `modules` subdirectory
+/// (`src-tauri/assets`), so that `content_for("modules/...")` resolves to
+/// `<assets>/modules/...`. Returns `None` only when the files are genuinely absent (e.g. a bare
+/// `cargo test`), so callers can degrade gracefully.
+fn resolve_modules_dir() -> Option<PathBuf> {
+    // modules dir, found CWD-independently.
+    let modules = (|| {
+        if let Ok(manifest) = std::env::var("CARGO_MANIFEST_DIR") {
+            let rel = PathBuf::from(manifest).join("assets/modules");
+            if let Some(p) = rel.canonicalize().ok() {
+                if p.join("docs").is_dir() { return Some(p); }
+            }
+        }
+        if let Some(p) = PathBuf::from(MODULES_DIR).canonicalize().ok() {
+            if p.join("docs").is_dir() { return Some(p); }
+        }
+        if let Ok(exe) = std::env::current_exe() {
+            if let Some(dir) = exe.parent() {
+                let rel = dir.join("../Resources/assets/modules");
+                if let Some(p) = rel.canonicalize().ok() {
+                    if p.join("docs").is_dir() { return Some(p); }
+                }
+            }
+        }
+        None
+    })()?;
+    modules.parent().map(Path::to_path_buf)
+}
+
 /// Base URL prefix a module is served under. `hwp`/`rhwp` use `/rhwp` because
-/// the bundle hard-codes `/rhwp/...` absolute asset paths.
+/// the bundle hard-codes `/rhwp/...` absolute asset paths. Other modules live
+/// under `/modules/<name>/` (docs/sheets/slides), matching the `assets/modules`
+/// directory layout on disk.
 fn base_for(name: &str) -> &'static str {
     match name {
         "hwp" | "rhwp" => "/rhwp",
-        "docs" | "sheets" | "slides" => "/modules",
+        "docs" => "/modules/docs",
+        "sheets" => "/modules/sheets",
+        "slides" => "/modules/slides",
         _ => "/modules",
     }
 }
@@ -49,10 +88,16 @@ fn sub_for(url_path: &str) -> Option<(&'static str, &str)> {
     None
 }
 
+/// Resolves a URL path to an absolute file path inside the modules dir.
+/// `sub` is the directory name under `MODULES_DIR` the prefix maps to
+/// (`modules` for `/modules`, `hwp-rhwp` for `/rhwp`); `rest` is the remainder.
 fn content_for(rel: &str) -> Option<PathBuf> {
     // directory requests default to index.html
     let rel = rel.trim_end_matches('/');
-    let dir = Path::new(MODULES_DIR).join(rel);
+    // base is the parent of the modules dir (the "assets" dir), so that rel
+    // ("modules/...") resolves to <assets>/modules/...
+    let base = resolve_modules_dir()?;
+    let dir = base.join(rel);
     if dir.is_dir() {
         dir.join("index.html").canonicalize().ok()
     } else {
@@ -63,7 +108,13 @@ fn content_for(rel: &str) -> Option<PathBuf> {
 /// Resolves a URL path to an absolute file path inside the modules dir.
 fn resolve(url_path: &str) -> Option<PathBuf> {
     let (sub, rest) = sub_for(url_path)?;
-    content_for(&format!("{}/{}", sub, rest))
+    // `/modules` -> modules/... ; `/rhwp` -> modules/hwp-rhwp/...
+    let rel = if sub == "modules" {
+        format!("modules/{}", rest)
+    } else {
+        format!("modules/{}/{}", sub, rest)
+    };
+    content_for(&rel)
 }
 
 fn mime_for(path: &Path) -> Header {
@@ -356,7 +407,73 @@ mod tests {
         assert_eq!(fr["size"].as_u64().unwrap() as usize, content.len());
     }
 
+    /// End-to-end: start the real static server and HTTP-fetch the URLs the
+    /// browser module window requests, proving the full serve pipeline
+    /// (server -> resolve -> file bytes) returns 200 with body.
+    #[test]
+    fn static_server_serves_module_urls() {
+        use std::io::Write;
+        use std::net::TcpStream;
+        let base = ensure_server();
+        // base like http://127.0.0.1:PORT ; parse host and port out of it.
+        let without_scheme = base.replace("http://", "");
+        let (host, port) = match without_scheme.rfind(':') {
+            Some(i) => without_scheme.split_at(i), // host="127.0.0.1", port=":58697"
+            None => (without_scheme.as_str(), "0"),
+        };
+        let host = host.split('/').next().unwrap_or("127.0.0.1");
+        let port = port.strip_prefix(':').unwrap_or("0");
+        let urls = ["/modules/docs/index.html", "/modules/docs/office-preload.js", "/rhwp/office-preload.js"];
+        let mut results = Vec::new();
+        for u in urls {
+            let req = format!("GET {} HTTP/1.1\r\nHost: {}\r\nConnection: close\r\n\r\n", u, host);
+            if let Ok(mut s) = TcpStream::connect(format!("{}:{}", host, port)) {
+                let _ = s.write_all(req.as_bytes());
+                let mut buf = Vec::new();
+                let _ = std::io::Read::read_to_end(&mut s, &mut buf);
+                let text = String::from_utf8_lossy(&buf).into_owned();
+                let status_ok = text.lines().next().map(|l| l.contains(" 200 ")).unwrap_or(false);
+                let has_body = text.len() > 40;
+                results.push((u.to_string(), status_ok, has_body));
+            } else {
+                results.push((u.to_string(), false, false));
+            }
+        }
+        for (u, ok, body) in &results {
+            assert!(ok, "server did not return 200 for {u}");
+            assert!(body, "server returned empty body for {u}");
+        }
+    }
 
+    /// The office preload bridge must be reachable from both the `/modules/`
+    /// (docs/sheets/slides) and `/rhwp/` (hwp) URL prefixes, and the file must
+    /// actually exist on disk where the static server serves from. This is the
+    /// fix for the Tauri v2 preload gap: dynamically-created module windows have
+    /// no preload-script mechanism, so the bridge is injected via a `<script>`
+    /// tag in each module index.html.
+    #[test]
+    fn office_preload_served_from_both_prefixes() {
+        for url in ["/modules/docs/office-preload.js", "/rhwp/office-preload.js"] {
+            let path = resolve(url).unwrap_or_else(|| panic!("resolve {url}"));
+            assert!(path.is_file(), "preload file {url} not found at {path:?}");
+            let bytes = std::fs::read(&path).expect("read preload");
+            assert!(contains(&bytes, b"window.desktop"), "preload {url} lacks polyfill");
+            assert!(contains(&bytes, b"office_open"), "preload {url} lacks invoke");
+        }
+    }
+
+    /// The served base for each module must resolve to an existing index.html
+    /// under `<base>/index.html` — the `base_for` prefix must include the
+    /// module's subdirectory (e.g. `/modules/docs`, not just `/modules`).
+    #[test]
+    fn base_for_points_to_existing_index() {
+        for name in ["docs", "sheets", "slides", "hwp"] {
+            let base = base_for(name);
+            let url = format!("{base}/index.html");
+            let path = resolve(&url).expect("resolved index.html");
+            assert!(path.is_file(), "{url} not found at {path:?}");
+        }
+    }
 
     fn contains(haystack: &[u8], needle: &[u8]) -> bool {
         haystack
